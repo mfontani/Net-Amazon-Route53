@@ -26,10 +26,6 @@ has 'ua' => (
     },
 );
 
-sub BUILD {
-    my $self = shift;
-}
-
 sub request {
     my $self   = shift;
     my $method = shift;
