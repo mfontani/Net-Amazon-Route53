@@ -56,6 +56,7 @@ sub request {
 
 sub get_hosted_zones {
     my $self         = shift;
+    my $which        = shift;
     my $start_marker = '';
     my @zones;
     while (1) {
@@ -75,6 +76,7 @@ sub get_hosted_zones {
             comment => $zone->{HostedZone}{Config}{Comment},
           );
     }
+    @o_zones = grep { $_->name eq $which } @o_zones if $which;
     return @o_zones;
 }
 
