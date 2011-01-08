@@ -1,5 +1,25 @@
 use strict;
 use warnings;
+
 package Net::Amazon::Route53;
+use LWP::UserAgent;
+use Mouse;
+
+has 'id'  => ( is => 'ro', isa => 'Str', required => 1, );
+has 'key' => ( is => 'ro', isa => 'Str', required => 1, );
+
+has 'ua'  => (
+    is       => 'rw',
+    isa      => 'LWP::UserAgent',
+    required => 1,
+    default  => sub {
+        my $self = shift;
+        LWP::UserAgent->new();
+    },
+);
+
+sub BUILD {
+    my $self = shift;
+}
 
 1;
