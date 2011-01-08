@@ -52,7 +52,7 @@ sub request
         $uri,
         'Date' => $date,
         'X-Amzn-Authorization' =>
-          sprintf( "AWS3-HTTPS AWSAccessKey=%s,Algorithm=HmacSHA1,Signature=%s", $self->key, $signature ),
+          sprintf( "AWS3-HTTPS AWSAccessKeyId=%s,Algorithm=HmacSHA1,Signature=%s", $self->id, $signature ),
     );
 }
 
