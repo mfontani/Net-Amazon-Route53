@@ -14,7 +14,10 @@ has 'ua'  => (
     required => 1,
     default  => sub {
         my $self = shift;
-        LWP::UserAgent->new();
+        LWP::UserAgent->new(
+            keep_alive            => 10,
+            requests_redirectable => [qw(GET HEAD DELETE PUT)],
+        );
     },
 );
 
