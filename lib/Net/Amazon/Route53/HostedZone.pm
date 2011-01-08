@@ -35,6 +35,7 @@ sub BUILD
     for my $res ( @{ $resp->{ResourceRecordSets}{ResourceRecordSet} } )
     {
         push @resource_record_sets, Net::Amazon::Route53::ResourceRecordSet->new(
+            route53 => $self->route53,
             hostedzone => $self,
             name => $res->{Name},
             ttl => $res->{TTL},
