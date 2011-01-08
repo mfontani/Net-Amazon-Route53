@@ -14,43 +14,48 @@ has 'name'            => ( is => 'rw', isa => 'Str', required => 1, default => '
 has 'callerreference' => ( is => 'rw', isa => 'Str', required => 1, default => '' );
 has 'comment'         => ( is => 'rw', isa => 'Str', required => 1, default => '' );
 
-has 'nameservers' => ( is => 'rw', isa => 'ArrayRef[Str]', required => 1, default => sub { [] } );
-
-has 'resource_record_sets' => ( is => 'rw', isa => 'ArrayRef', required => 1, default => sub { [] } );
-
-sub BUILD {
-    my $self = shift;
-
-    my $rc = $self->route53->request( 'get', 'https://route53.amazonaws.com/2010-10-01/' . $self->id );
-    my $resp = XML::Bare::xmlin( $rc->decoded_content );
-
-    my @nameservers = @{ $resp->{DelegationSet}{NameServers}{NameServer} };
-    print "  nameserver: $_\n" for @nameservers;
-    $self->nameservers( \@nameservers );
-
-    my @resource_record_sets;
-    $rc = $self->route53->request( 'get', 'https://route53.amazonaws.com/2010-10-01/' . $self->id . '/rrset' );
-    $resp = XML::Bare::xmlin( $rc->decoded_content );
-    for my $res ( @{ $resp->{ResourceRecordSets}{ResourceRecordSet} } ) {
-        push @resource_record_sets,
-          Net::Amazon::Route53::ResourceRecordSet->new(
-            route53    => $self->route53,
-            hostedzone => $self,
-            name       => $res->{Name},
-            ttl        => $res->{TTL},
-            type       => $res->{Type},
-            values     => [
-                map { $_->{Value} } @{
-                    ref $res->{ResourceRecords}{ResourceRecord} eq 'ARRAY'
-                    ? $res->{ResourceRecords}{ResourceRecord}
-                    : [ $res->{ResourceRecords}{ResourceRecord} ]
-                  }
-            ],
-          );
+has 'nameservers' => (
+    is      => 'rw',
+    isa     => 'ArrayRef[Str]',
+    lazy    => 1,
+    default => sub {
+        my $self        = shift;
+        my $rc          = $self->route53->request( 'get', 'https://route53.amazonaws.com/2010-10-01/' . $self->id );
+        my $resp        = XML::Bare::xmlin( $rc->decoded_content );
+        my @nameservers = @{ $resp->{DelegationSet}{NameServers}{NameServer} };
+        \@nameservers;
     }
-    $self->resource_record_sets( \@resource_record_sets );
-    $self;
-}
+);
+
+has 'resource_record_sets' => (
+    is      => 'rw',
+    isa     => 'ArrayRef',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        my @resource_record_sets;
+        my $rc = $self->route53->request( 'get', 'https://route53.amazonaws.com/2010-10-01/' . $self->id . '/rrset' );
+        my $resp = XML::Bare::xmlin( $rc->decoded_content );
+        for my $res ( @{ $resp->{ResourceRecordSets}{ResourceRecordSet} } ) {
+            push @resource_record_sets,
+              Net::Amazon::Route53::ResourceRecordSet->new(
+                route53    => $self->route53,
+                hostedzone => $self,
+                name       => $res->{Name},
+                ttl        => $res->{TTL},
+                type       => $res->{Type},
+                values     => [
+                    map { $_->{Value} } @{
+                        ref $res->{ResourceRecords}{ResourceRecord} eq 'ARRAY'
+                        ? $res->{ResourceRecords}{ResourceRecord}
+                        : [ $res->{ResourceRecords}{ResourceRecord} ]
+                      }
+                ],
+              );
+        }
+        \@resource_record_sets;
+    }
+);
 
 no Mouse;
 1;
