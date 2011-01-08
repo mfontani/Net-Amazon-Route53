@@ -1,0 +1,185 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+use Net::Amazon::Route53;
+use Getopt::Long;
+use Pod::Usage;
+
+# Show help page or man
+my $man  = 0;
+my $help = 0;
+
+# Either keyfile + friendly name
+my $keyfile = $ENV{HOME} . '/.aws-secrets';
+my $keyname = '';
+
+# Or key and id
+my $key = '';
+my $id  = '';
+
+GetOptions(
+    'help|?'    => \$help,
+    'man'       => \$man,
+    'keyfile=s' => \$keyfile,
+    'keyname=s' => \$keyname,
+    'key=s'     => \$key,
+    'id=s'      => \$id,
+) or pod2usage(1);
+pod2usage(1) if $help;
+pod2usage( -exitstatus => 0, -verbose => 2 ) if $man;
+
+if ( length $keyname ) {
+    die("Need a keyfile when a keyname is given\n")        if ( !length $keyfile );
+    die("No such keyfile: $keyfile\n")                     if ( !-f $keyfile );
+    die("Either provide a keyname/keyfile, or a key/id\n") if ( length $key or length $id );
+    my $keyfile_contents = do {
+        local $/;
+        open my $f, '<', $keyfile or die "Cannot open $keyfile for reading: $!";
+        my $tmp = <$f>;
+        close $f or die "Cannot close $keyfile: $!";
+        $tmp;
+    };
+    my %awsSecretAccessKeys;
+    eval "$keyfile_contents" or die "Cannot parse $keyfile\'s contents.\n";
+    die("No such friendly key $keyname in $keyfile\n")      if !exists $awsSecretAccessKeys{$keyname};
+    die("Friendly key $keyname in $keyfile misses 'id'\n")  if !exists $awsSecretAccessKeys{$keyname}{id};
+    die("Friendly key $keyname in $keyfile misses 'key'\n") if !exists $awsSecretAccessKeys{$keyname}{key};
+    $id      = $awsSecretAccessKeys{$keyname}{id};
+    $key     = $awsSecretAccessKeys{$keyname}{key};
+    $keyfile = $keyname = '';
+}
+if ( length $key or length $id ) {
+    die("Both id and key must be given\n") if ( !length $key or !length $id );
+}
+
+die "Need an action\n" if (!@ARGV);
+
+my %actions = (
+    'list'        => \&do_list,
+    'nameservers' => \&do_nameservers,
+);
+my $action = shift @ARGV;
+die "Need an action\nUse route53 --help to list the allowed actions\n" unless defined $action;
+die "Unrecognised action: $action\nUse route53 --help to list the allowed actions\n" unless exists $actions{$action};
+
+my $route53 = Net::Amazon::Route53->new( id => $id, key => $key );
+
+my $outcome = $actions{$action}->($route53, @ARGV);
+print $outcome;
+
+sub do_list {
+    my $route53 = shift;
+    my @hosted_zones = $route53->get_hosted_zones();
+    return "No hosted zones associated with this account\n" if !@hosted_zones;
+    my $output = '';
+    for my $hosted_zone ( @hosted_zones )
+    {
+        $output .= "Hosted zone:\n";
+        $output .= "  id: " . $hosted_zone->id . "\n";
+        $output .= "  name: " . $hosted_zone->name . "\n";
+        $output .= "  callerreference: " . $hosted_zone->callerreference . "\n";
+        $output .= "  comment: " . $hosted_zone->comment . "\n";
+    }
+    return $output;
+}
+
+sub do_nameservers {
+    my $route53 = shift;
+    my $which   = shift;
+    my @hosted_zones = $route53->get_hosted_zones($which);
+    return "No hosted zones associated with this account\n" if (!$which and !@hosted_zones);
+    return "No such hosted zone $which\n" if ($which and !@hosted_zones);
+    my $output = '';
+    for my $hosted_zone ( @hosted_zones )
+    {
+        if ( !$which ) {
+            $output .= "Hosted zone:\n";
+            $output .= "  id: " . $hosted_zone->id . "\n";
+            $output .= "  name: " . $hosted_zone->name . "\n";
+            $output .= "  callerreference: " . $hosted_zone->callerreference . "\n";
+            $output .= "  comment: " . $hosted_zone->comment . "\n";
+        }
+        my @nameservers = @{ $hosted_zone->nameservers };
+        for my $nameserver ( @nameservers )
+        {
+            $output .= ( $which ? '' : '  nameserver: ' ) . "$nameserver\n";
+        }
+    }
+    return $output;
+}
+
+__END__
+
+=head1 NAME
+
+route53 - Manage your DNS entries on Amazon's Route53 service
+
+=head1 SYNOPSIS
+
+route53 {key and id} [options] action [action arguments]
+
+Either C<-keyfile> and C<-keyname> or C<-id> and C<-key> must be provided.
+
+=head2 OPTIONS
+
+=over 8
+
+=item B<-keyfile>
+
+The file which contains the keys and ids for the Route53 service,
+in the format used by Amazon's "route53.pl" script:
+
+    %awsSecretAccessKeys = (
+        "my-aws-account" => {
+            id => "ABCDEFG",
+            key => "12345",
+        },
+    );
+
+=item B<-keyname>
+
+The name of the key to be used; in the above C<-keyfile> example,
+it could be C<my-aws-account>.
+
+=item B<-id>
+
+The AWS id to be used; in the above example it could be
+C<ABCDEFG>.
+
+=item B<-key>
+
+The AWS key to be used; in the above example it could be
+C<12345>.
+
+=item B<-help>
+
+Prints the help page and exits
+
+=item B<-man>
+
+Prints the manual page and exits
+
+=back
+
+=head1 ARGUMENTS
+
+B<route53> performs a number of B<actions>, each of which may take
+a number of arguments:
+
+=over 8
+
+=item B<list>
+
+Lists the hosted zones currently associated with the account.
+Takes no arguments.
+
+=back
+
+=head1 DESCRIPTION
+
+B<route53> will manage your Amazon Route 53 account
+
+=cut
+
