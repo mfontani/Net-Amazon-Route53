@@ -42,10 +42,10 @@ GetOptions(
 pod2usage(1) if $help;
 pod2usage( -exitstatus => 0, -verbose => 2 ) if $man;
 
-die("Either provide a keyname/keyfile, or a key/id\n") if ( !length $keyname and (!length $key or !length $id) );
+die("Either provide a keyname/keyfile, or a key/id\n") if ( !length $keyname and ( !length $key or !length $id ) );
 if ( length $keyname ) {
-    die("Need a keyfile when a keyname is given\n")        if ( !length $keyfile );
-    die("No such keyfile: $keyfile\n")                     if ( !-f $keyfile );
+    die("Need a keyfile when a keyname is given\n") if ( !length $keyfile );
+    die("No such keyfile: $keyfile\n") if ( !-f $keyfile );
     my $keyfile_contents = do {
         local $/;
         open my $f, '<', $keyfile or die "Cannot open $keyfile for reading: $!";
@@ -66,7 +66,7 @@ if ( length $key or length $id ) {
     die("Both id and key must be given\n") if ( !length $key or !length $id );
 }
 
-pod2usage("Need an action") if (!@ARGV);
+pod2usage("Need an action") if ( !@ARGV );
 
 my %actions = (
     'list'        => \&do_list,
@@ -79,16 +79,16 @@ die "Unrecognised action: $action\nUse route53 --help to list the allowed action
 
 my $route53 = Net::Amazon::Route53->new( id => $id, key => $key );
 
-my $outcome = $actions{$action}->($route53, @ARGV);
+my $outcome = $actions{$action}->( $route53, @ARGV );
 print $outcome;
 
-sub do_list {
-    my $route53 = shift;
+sub do_list
+{
+    my $route53      = shift;
     my @hosted_zones = $route53->get_hosted_zones();
     return "No hosted zones associated with this account\n" if !@hosted_zones;
     my $output = '';
-    for my $hosted_zone ( @hosted_zones )
-    {
+    for my $hosted_zone (@hosted_zones) {
         $output .= "Hosted zone:\n";
         $output .= "  id: " . $hosted_zone->id . "\n";
         $output .= "  name: " . $hosted_zone->name . "\n";
@@ -98,15 +98,15 @@ sub do_list {
     return $output;
 }
 
-sub do_nameservers {
-    my $route53 = shift;
-    my $which   = shift;
+sub do_nameservers
+{
+    my $route53      = shift;
+    my $which        = shift;
     my @hosted_zones = $route53->get_hosted_zones($which);
-    return "No hosted zones associated with this account\n" if (!$which and !@hosted_zones);
-    return "No such hosted zone $which\n" if ($which and !@hosted_zones);
+    return "No hosted zones associated with this account\n" if ( !$which and !@hosted_zones );
+    return "No such hosted zone $which\n"                   if ( $which  and !@hosted_zones );
     my $output = '';
-    for my $hosted_zone ( @hosted_zones )
-    {
+    for my $hosted_zone (@hosted_zones) {
         if ( !$which ) {
             $output .= "Hosted zone:\n";
             $output .= "  id: " . $hosted_zone->id . "\n";
@@ -115,15 +115,15 @@ sub do_nameservers {
             $output .= "  comment: " . $hosted_zone->comment . "\n";
         }
         my @nameservers = @{ $hosted_zone->nameservers };
-        for my $nameserver ( @nameservers )
-        {
+        for my $nameserver (@nameservers) {
             $output .= ( $which ? '' : '  nameserver: ' ) . "$nameserver\n";
         }
     }
     return $output;
 }
 
-sub do_zone {
+sub do_zone
+{
     my $route53 = shift;
     my $which   = shift;
     die "Need a zone or action name\n" if !$which;
@@ -136,17 +136,17 @@ sub do_zone {
         die "No comment specified; please use --comment\n"                 if !length $options{comment};
         die "No callerreference specified; please use --callerreference\n" if !length $options{callerreference};
         print
-            "Creating new zone '$zone'\n",
-            "  comment:          '$options{comment}'\n",
-            "  caller reference: '$options{callerreference}'\n";
+          "Creating new zone '$zone'\n",
+          "  comment:          '$options{comment}'\n",
+          "  caller reference: '$options{callerreference}'\n";
         my $new_zone = Net::Amazon::Route53::HostedZone->new(
-            route53 => $route53,
-            name => $zone,
-            comment => $options{comment},
+            route53         => $route53,
+            name            => $zone,
+            comment         => $options{comment},
             callerreference => $options{callerreference},
         );
         eval { $new_zone->create(@_) }
-            or die "Could not create zone $zone: $@\n";
+          or die "Could not create zone $zone: $@\n";
         return "Zone created\n";
     }
     if ( $which eq 'delete' ) {
@@ -154,9 +154,9 @@ sub do_zone {
         die "Need a zone name to delete\n" if !$zone;
         die "Zone needs to end in a dot\n" if $zone !~ /\.$/;
         my @hosted_zones = $route53->get_hosted_zones($zone);
-        return "No such hosted zone $zone\n" if (!@hosted_zones);
+        return "No such hosted zone $zone\n" if ( !@hosted_zones );
         eval { $hosted_zones[0]->delete }
-            or die "Could not delete zone $zone: $@\n";
+          or die "Could not delete zone $zone: $@\n";
         return "Zone deleted\n";
     }
 
