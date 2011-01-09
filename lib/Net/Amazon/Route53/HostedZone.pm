@@ -3,7 +3,6 @@ use warnings;
 
 package Net::Amazon::Route53::HostedZone;
 use Mouse;
-use XML::Bare;
 
 use Net::Amazon::Route53::Change;
 
@@ -60,9 +59,7 @@ has 'nameservers' => (
     lazy    => 1,
     default => sub {
         my $self        = shift;
-        my $rc          = $self->route53->request( 'get', 'https://route53.amazonaws.com/2010-10-01/' . $self->id );
-        my $resp        = XML::Bare::xmlin( $rc->decoded_content );
-        die "Error: $resp->{Error}{Code}" if ( exists $resp->{Error} );
+        my $respo       = $self->route53->request( 'get', 'https://route53.amazonaws.com/2010-10-01/' . $self->id );
         my @nameservers = @{ $resp->{DelegationSet}{NameServers}{NameServer} };
         \@nameservers;
     }
@@ -81,10 +78,9 @@ has 'resource_record_sets' => (
     lazy    => 1,
     default => sub {
         my $self = shift;
+        my $resp =
+          $self->route53->request( 'get', 'https://route53.amazonaws.com/2010-10-01/' . $self->id . '/rrset' );
         my @resource_record_sets;
-        my $rc = $self->route53->request( 'get', 'https://route53.amazonaws.com/2010-10-01/' . $self->id . '/rrset' );
-        my $resp = XML::Bare::xmlin( $rc->decoded_content );
-        die "Error: $resp->{Error}{Code}" if ( exists $resp->{Error} );
         for my $res ( @{ $resp->{ResourceRecordSets}{ResourceRecordSet} } ) {
             push @resource_record_sets,
               Net::Amazon::Route53::ResourceRecordSet->new(
@@ -136,22 +132,21 @@ sub create {
 </CreateHostedZoneRequest>
 ENDXML
     my $request_xml = sprintf( $request_xml_str, $self->name, $self->callerreference, $self->comment );
-    my $rc = $self->route53->request(
+    my $resp = $self->route53->request(
         'post',
         'https://route53.amazonaws.com/2010-10-01/hostedzone',
         Content => $request_xml,
     );
-    my $resp = XML::Bare::xmlin( $rc->decoded_content );
-    die "Error: $resp->{Error}{Code}" if ( exists $resp->{Error} );
-    $self->id( $resp->{HostedZone}{Id});
+    $self->id( $resp->{HostedZone}{Id} );
     $self->nameservers( [ map { $_->{NameServer} } @{ $resp->{DelegationSet}{NameServers} } ] );
     my $change = Net::Amazon::Route53::Change->new(
         route53 => $self->route53,
-        (map { lc($_) => $resp->{ChangeInfo}{$_} } qw/Id Status SubmittedAt/),
+        ( map { lc($_) => $resp->{ChangeInfo}{$_} } qw/Id Status SubmittedAt/ ),
     );
     $change->refresh();
     return $change if !$wait;
-    while ( lc($change->status) ne 'insync' ) {
+
+    while ( lc( $change->status ) ne 'insync' ) {
         sleep 2;
         $change->refresh();
     }
@@ -175,19 +170,14 @@ sub delete {
     my $self = shift;
     my $wait = shift;
     $wait = 0 if !defined $wait;
-    my $rc = $self->route53->request(
-        'delete',
-        'https://route53.amazonaws.com/2010-10-01/' . $self->id,
-    );
-    my $resp = XML::Bare::xmlin( $rc->decoded_content );
-    die "Error: $resp->{Error}{Code}" if ( exists $resp->{Error} );
+    my $resp = $self->route53->request( 'delete', 'https://route53.amazonaws.com/2010-10-01/' . $self->id, );
     my $change = Net::Amazon::Route53::Change->new(
         route53 => $self->route53,
-        (map { lc($_) => $resp->{ChangeInfo}{$_} } qw/Id Status SubmittedAt/),
+        ( map { lc($_) => $resp->{ChangeInfo}{$_} } qw/Id Status SubmittedAt/ ),
     );
     $change->refresh();
     return $change if !$wait;
-    while ( lc($change->status) ne 'insync' ) {
+    while ( lc( $change->status ) ne 'insync' ) {
         sleep 2;
         $change->refresh();
     }
