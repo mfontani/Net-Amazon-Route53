@@ -11,7 +11,11 @@ use Net::Amazon::Route53::Change;
     my $hostedzone = Net::Amazon::Route53::HostedZone->new(...);
     # use methods on $hostedzone
 
+=cut
+
 =head2 ATTRIBUTES
+
+=cut
 
 =head3 route53
 
@@ -103,6 +107,8 @@ has 'resource_record_sets' => (
 );
 
 =head2 METHODS
+
+=cut
 
 =head3 create
 
