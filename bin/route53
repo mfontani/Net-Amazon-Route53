@@ -74,7 +74,7 @@ my %actions = (
     'list'        => \&do_list,
     'nameservers' => \&do_nameservers,
     'zone'        => \&do_zone,
-    'records'     => \&do_records,
+    'record'      => \&do_record,
 );
 my $action = shift @ARGV;
 die "Need an action\nUse route53 --help to list the allowed actions\n" unless defined $action;
@@ -169,7 +169,7 @@ sub do_zone
     do_nameservers( $route53, $which );
 }
 
-sub do_records
+sub do_record
 {
     my $route53 = shift;
     my $which   = shift;
@@ -307,9 +307,9 @@ option.
 
 =back
 
-=item B<records>
+=item B<record>
 
-Performs actions on a specific DNS zone records. A DNS zone name must be given.
+Performs actions on a specific DNS zone record. A DNS zone name must be given.
 If no action is provided, it lists all records for the zone.
 
 Possible actions are:
@@ -426,7 +426,7 @@ has been sent to Route 53.
 
 Lists all DNS records for a zone:
 
-    $ route53 --keyname my-aws-account records list example.com.
+    $ route53 --keyname my-aws-account record list example.com.
     example.com. A 14400 127.0.0.1
     example.com. MX 14400 127.0.0.1
     example.com. NS 172800 ns-123.awsdns-123.com. ns-123.awsdns-123.co.uk. ns-123.awsdns-123.org.
@@ -435,7 +435,7 @@ Lists all DNS records for a zone:
 
 You can optionally specify C<--type> to display only DNS records of a given type:
 
-    $ route53 --keyname my-aws-account records list example.com. --type A
+    $ route53 --keyname my-aws-account record list example.com. --type A
     example.com. A 14400 127.0.0.1
     *.example.com. A 300 127.0.0.1
 
