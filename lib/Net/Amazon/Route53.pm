@@ -60,12 +60,15 @@ has 'ua' => (
 
 =head2 METHODS
 
+=cut
+
 =head3 C<request>
 
-    my $response = $self->request( $method, $url );
+    my $hr_xml_response = $self->request( $method, $url );
 
-Requests something from Amazon Route 53, signing the request.
-Uses L<LWP::UserAgent> internally, and returns the request.
+Requests something from Amazon Route 53, signing the request.  Uses
+L<LWP::UserAgent> internally, and returns the hashref obtained from the
+request. Dies on error, showing the request's error given by the API.
 
 =cut
 
