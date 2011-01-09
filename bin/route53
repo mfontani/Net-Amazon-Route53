@@ -25,6 +25,8 @@ my %options = (
     callerreference => '',
     wait            => 0,
     type            => '',
+    name            => '',
+    ttl             => '',
 );
 
 GetOptions(
@@ -39,6 +41,8 @@ GetOptions(
     'callerreference=s' => \$options{callerreference},
     'wait'              => \$options{wait},
     'type=s'            => \$options{type},
+    'name=s'            => \$options{name},
+    'ttl=s'             => \$options{ttl},
 
 ) or pod2usage(1);
 pod2usage(1) if $help;
@@ -185,8 +189,10 @@ sub do_record
         my $output = '';
         for my $rrs ( @{ $hosted_zones[0]->resource_record_sets() } ) {
             next if $options{type} and uc($rrs->type) ne uc($options{type});
+            next if $options{ttl} and $rrs->ttl ne $options{ttl};
             my $name = $rrs->name;
             $name =~ s/\\052/\*/g;
+            next if $options{name} and $name ne $options{name};
             $output .= sprintf("%s %s %s %s\n",
                 $name,
                 $rrs->type,
@@ -322,6 +328,8 @@ This is the default action if no action is specified. Lists all DNS records for
 the zone.
 
 If a C<--type> is given, it lists only the records of the given type.
+If a C<--name> is given, it lists only the records which have the given name.
+If a C<--ttl> is given, it lists only the records which have the given TTL.
 
 =back
 
