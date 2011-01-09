@@ -23,7 +23,11 @@ use Net::Amazon::Route53::HostedZone;
         # use the Net::Amazon::Route53::HostedZone object
     }
 
+=cut
+
 =head2 ATTRIBUTES
+
+=cut
 
 =head3 id
 
