@@ -89,13 +89,16 @@ sub request {
     $hmac->add($date);
     my $signature = encode_base64( $hmac->digest, '' );
 
-    $self->ua->$method(
+    my $rc = $self->ua->$method(
         $uri,
         'Date' => $date,
         'X-Amzn-Authorization' =>
           sprintf( "AWS3-HTTPS AWSAccessKeyId=%s,Algorithm=HmacSHA1,Signature=%s", $self->id, $signature ),
         @_
     );
+    my $resp = XML::Bare::xmlin( $rc->decoded_content );
+    die "Error: $resp->{Error}{Code}" if ( exists $resp->{Error} );
+    return $resp;
 }
 
 =head3 C<get_hosted_zones>
@@ -117,10 +120,8 @@ sub get_hosted_zones {
     my $start_marker = '';
     my @zones;
     while (1) {
-        my $rc =
+        my $resp =
           $self->request( 'get', 'https://route53.amazonaws.com/2010-10-01/hostedzone?maxitems=100' . $start_marker );
-        my $resp = XML::Bare::xmlin( $rc->decoded_content );
-        die "Error: $resp->{Error}{Code}" if ( exists $resp->{Error} );
         push @zones, ( ref $resp->{HostedZones} eq 'ARRAY' ? @{ $resp->{HostedZones} } : $resp->{HostedZones} );
         last if $resp->{IsTruncated} eq 'false';
         $start_marker = '?marker=' . $resp->{NextMarker};
