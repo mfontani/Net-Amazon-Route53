@@ -198,6 +198,8 @@ in the format used by Amazon's "route53.pl" script:
         },
     );
 
+Defaults to C<~/.aws-secrets> when not given.
+
 =item B<-keyname>
 
 The name of the key to be used; in the above C<-keyfile> example,
