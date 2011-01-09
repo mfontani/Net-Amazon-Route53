@@ -19,6 +19,13 @@ my $keyname = '';
 my $key = '';
 my $id  = '';
 
+# Other options, command-specific
+my %options = (
+    comment         => '',
+    callerreference => '',
+    wait            => 0,
+);
+
 GetOptions(
     'help|?'    => \$help,
     'man'       => \$man,
@@ -26,6 +33,11 @@ GetOptions(
     'keyname=s' => \$keyname,
     'key=s'     => \$key,
     'id=s'      => \$id,
+
+    'comment=s'         => \$options{comment},
+    'callerreference=s' => \$options{callerreference},
+    'wait'              => \$options{wait},
+
 ) or pod2usage(1);
 pod2usage(1) if $help;
 pod2usage( -exitstatus => 0, -verbose => 2 ) if $man;
@@ -59,6 +71,7 @@ pod2usage("Need an action") if (!@ARGV);
 my %actions = (
     'list'        => \&do_list,
     'nameservers' => \&do_nameservers,
+    'zone'        => \&do_zone,
 );
 my $action = shift @ARGV;
 die "Need an action\nUse route53 --help to list the allowed actions\n" unless defined $action;
@@ -108,6 +121,49 @@ sub do_nameservers {
         }
     }
     return $output;
+}
+
+sub do_zone {
+    my $route53 = shift;
+    my $which   = shift;
+    die "Need a zone or action name\n" if !$which;
+
+    # actions
+    if ( $which eq 'create' ) {
+        my $zone = shift;
+        die "Need a zone name to create\n"                                 if !$zone;
+        die "Zone needs to end in a dot\n"                                 if $zone !~ /\.$/;
+        die "No comment specified; please use --comment\n"                 if !length $options{comment};
+        die "No callerreference specified; please use --callerreference\n" if !length $options{callerreference};
+        print
+            "Creating new zone '$zone'\n",
+            "  comment:          '$options{comment}'\n",
+            "  caller reference: '$options{callerreference}'\n";
+        my $new_zone = Net::Amazon::Route53::HostedZone->new(
+            route53 => $route53,
+            name => $zone,
+            comment => $options{comment},
+            callerreference => $options{callerreference},
+        );
+        eval { $new_zone->create(@_) }
+            or die "Could not create zone $zone: $@\n";
+        return "Zone created\n";
+    }
+    if ( $which eq 'delete' ) {
+        my $zone = shift;
+        die "Need a zone name to delete\n" if !$zone;
+        die "Zone needs to end in a dot\n" if $zone !~ /\.$/;
+        my @hosted_zones = $route53->get_hosted_zones($zone);
+        return "No such hosted zone $zone\n" if (!@hosted_zones);
+        eval { $hosted_zones[0]->delete }
+            or die "Could not delete zone $zone: $@\n";
+        return "Zone deleted\n";
+    }
+
+    # Not an action; bail out if it doesn't look like a zone
+    die "Unrecognised action/zone $which\n" if ( $which !~ /\.$/ );
+
+    do_nameservers( $route53, $which );
 }
 
 __END__
@@ -180,6 +236,26 @@ Takes no arguments.
 Lists the nameservers for all the hosted zones currently associated with the
 account. Takes a hosted zone name as an optional argument to just show the
 nameservers associated with that zone.
+
+=item B<zone>
+
+Performs actions on a specific DNS zone. If a zone name is given, rather than
+an action, it shows the nameservers associated with the zone.
+
+Possible actions are:
+
+=over 8
+
+=item B<create>
+
+Needs C<--comment> and C<--callerreference>. Creates a new zone
+
+=item B<delete>
+
+Deletes the zone. The zone needs to be empty (containing only NS and SOA entries)
+before Amazon's Route53 allows its deletion.
+
+=back
 
 =back
 
