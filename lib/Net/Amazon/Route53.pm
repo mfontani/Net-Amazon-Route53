@@ -10,6 +10,8 @@ use Mouse;
 
 use Net::Amazon::Route53::HostedZone;
 
+# ABSTRACT: Interface to Amazon's Route 53
+
 has 'id'  => ( is => 'rw', isa => 'Str', required => 1, );
 has 'key' => ( is => 'rw', isa => 'Str', required => 1, );
 
@@ -25,6 +27,17 @@ has 'ua' => (
         );
     },
 );
+
+=head2 METHODS
+
+=head3 C<request>
+
+    my $response = $self->request( $method, $url );
+
+Requests something from Amazon Route 53, signing the request.
+Uses L<LWP::UserAgent> internally, and returns the request.
+
+=cut
 
 sub request {
     my $self   = shift;
@@ -53,6 +66,19 @@ sub request {
           sprintf( "AWS3-HTTPS AWSAccessKeyId=%s,Algorithm=HmacSHA1,Signature=%s", $self->id, $signature ),
     );
 }
+
+=head3 C<get_hosted_zones>
+
+    my $route53 = Net::Amazon::Route53->new( key => '...', id => '...' );
+    my @zones = $route53->get_hosted_zones();
+    my $zone = $route53->get_hosted_zones( 'example.com.' );
+
+Gets one or more L<Net::Amazon::Route53::HostedZone> objects,
+representing the zones associated with the account.
+
+Takes an optional parameter indicating the name of the wanted hosted zone.
+
+=cut
 
 sub get_hosted_zones {
     my $self         = shift;
