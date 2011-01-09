@@ -145,7 +145,7 @@ sub do_zone
             comment         => $options{comment},
             callerreference => $options{callerreference},
         );
-        eval { $new_zone->create(@_) }
+        eval { $new_zone->create( wait => $options{wait}, @_ ) }
           or die "Could not create zone $zone: $@\n";
         return "Zone created\n";
     }
@@ -155,7 +155,7 @@ sub do_zone
         die "Zone needs to end in a dot\n" if $zone !~ /\.$/;
         my @hosted_zones = $route53->get_hosted_zones($zone);
         return "No such hosted zone $zone\n" if ( !@hosted_zones );
-        eval { $hosted_zones[0]->delete }
+        eval { $hosted_zones[0]->delete( wait => $options{wait}, @_ ) }
           or die "Could not delete zone $zone: $@\n";
         return "Zone deleted\n";
     }
@@ -344,11 +344,19 @@ Creates a new zone:
         --comment 'Zone for example.com.'
         --callerreference 'unique id for this'
 
+You can optionally specify C<--wait> to wait for the zone to have been
+effectively created. Otherwise the command returns as soon as the request
+has been sent to Route 53.
+
 =head2 Delete a zone
 
 Deletes a zone (assuming the zone contains only C<SOA> and C<NS> records):
 
     $ route53 --keyname my-aws-account zone delete example.com.
+
+You can optionally specify C<--wait> to wait for the zone to have been
+effectively deleted. Otherwise the command returns as soon as the request
+has been sent to Route 53.
 
 =cut
 
