@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-package Net::Amazon::Route53::HostedZone;
+package Net::Amazon::Route53::Change;
 use Mouse;
 use XML::Bare;
 
