@@ -146,7 +146,7 @@ ENDXML
     $self->id( $resp->{HostedZone}{Id});
     $self->nameservers( [ map { $_->{NameServer} } @{ $resp->{DelegationSet}{NameServers} } ] );
     my $change = Net::Amazon::Route53::Change->new(
-        route53 => $route53,
+        route53 => $self->route53,
         (map { lc($_) => $resp->{ChangeInfo}{$_} } qw/Id Status SubmittedAt/),
     );
     $change->refresh();
