@@ -12,8 +12,38 @@ use Net::Amazon::Route53::HostedZone;
 
 # ABSTRACT: Interface to Amazon's Route 53
 
+=head2 SYNOPSIS
+
+    use strict;
+    use warnings;
+    use Net::Amazon::Route53;
+    my $route53 = Net::Amazon::Route53->new( id => '...', key => '...' );
+    my @zones = $route53->get_hosted_zones;
+    for my $zone ( @zones ) {
+        # use the Net::Amazon::Route53::HostedZone object
+    }
+
+=head2 ATTRIBUTES
+
+=head3 id
+
+The Amazon id, needed to contact Amazon's Route 53.
+
+=head3 key
+
+The Amazon key, needed to contact Amazon's Route 53.
+
+=cut
+
 has 'id'  => ( is => 'rw', isa => 'Str', required => 1, );
 has 'key' => ( is => 'rw', isa => 'Str', required => 1, );
+
+=head3 ua
+
+Internal user agent object used to perform requests to
+Amazon's Route 53
+
+=cut
 
 has 'ua' => (
     is       => 'rw',
@@ -105,5 +135,11 @@ sub get_hosted_zones {
     @o_zones = grep { $_->name eq $which } @o_zones if $which;
     return @o_zones;
 }
+
+=head1 SEE ALSO
+
+L<Net::Amazon::Route53::HostedZone>
+
+=cut
 
 1;
