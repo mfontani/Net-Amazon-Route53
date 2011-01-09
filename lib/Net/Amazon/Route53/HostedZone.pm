@@ -158,5 +158,41 @@ ENDXML
     return $change;
 }
 
+=head3 delete
+
+Deletes the zone. A zone can only be deleted by Amazon's Route 53 service if it
+contains no records other than a SOA or NS.
+
+Takes an optional boolean parameter, C<wait>, to indicate whether the request should
+return straightaway (default, or when C<wait> is C<0>) or it should wait until the
+request is C<INSYNC> according to the Change's status.
+
+Returns a L<Net::Amazon::Route53::Change> object representing the change requested.
+
+=cut
+
+sub delete {
+    my $self = shift;
+    my $wait = shift;
+    $wait = 0 if !defined $wait;
+    my $rc = $self->route53->request(
+        'delete',
+        'https://route53.amazonaws.com/2010-10-01/' . $self->id,
+    );
+    my $resp = XML::Bare::xmlin( $rc->decoded_content );
+    die "Error: $resp->{Error}{Code}" if ( exists $resp->{Error} );
+    my $change = Net::Amazon::Route53::Change->new(
+        route53 => $self->route53,
+        (map { lc($_) => $resp->{ChangeInfo}{$_} } qw/Id Status SubmittedAt/),
+    );
+    $change->refresh();
+    return $change if !$wait;
+    while ( lc($change->status) ne 'insync' ) {
+        sleep 2;
+        $change->refresh();
+    }
+    return $change;
+}
+
 no Mouse;
 1;
