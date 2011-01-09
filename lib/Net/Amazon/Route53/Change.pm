@@ -9,7 +9,11 @@ use Mouse;
     my $change = Net::Amazon::Route53::Change->new(...);
     # use methods on $change
 
+=cut
+
 =head2 ATTRIBUTES
+
+=cut
 
 =head3 route53
 
@@ -44,6 +48,8 @@ has 'status'      => ( is => 'rw', isa => 'Str', required => 1, default => '' );
 has 'submittedat' => ( is => 'rw', isa => 'Str', required => 1, default => '' );
 
 =head2 METHODS
+
+=cut
 
 =head3 refresh
 
