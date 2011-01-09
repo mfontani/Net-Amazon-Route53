@@ -105,7 +105,7 @@ sub request
         @_
     );
     my $resp = XML::Bare::xmlin( $rc->decoded_content );
-    die "Error: $resp->{Error}{Code}" if ( exists $resp->{Error} );
+    die "Error: $resp->{Error}{Code}\n" if ( exists $resp->{Error} );
     return $resp;
 }
 
@@ -131,7 +131,7 @@ sub get_hosted_zones
     while (1) {
         my $resp =
           $self->request( 'get', 'https://route53.amazonaws.com/2010-10-01/hostedzone?maxitems=100' . $start_marker );
-        push @zones, ( ref $resp->{HostedZones} eq 'ARRAY' ? @{ $resp->{HostedZones} } : $resp->{HostedZones} );
+        push @zones, ( ref $resp->{HostedZones}{HostedZone} eq 'ARRAY' ? @{ $resp->{HostedZones}{HostedZone} } : $resp->{HostedZones}{HostedZone} );
         last if $resp->{IsTruncated} eq 'false';
         $start_marker = '?marker=' . $resp->{NextMarker};
     }
@@ -140,8 +140,8 @@ sub get_hosted_zones
         push @o_zones,
           Net::Amazon::Route53::HostedZone->new(
             route53 => $self,
-            ( map { lc($_) => $zone->{HostedZone}{$_} } qw/Id Name CallerReference/ ),
-            comment => $zone->{HostedZone}{Config}{Comment},
+            ( map { lc($_) => $zone->{$_} } qw/Id Name CallerReference/ ),
+            comment => $zone->{Config}{Comment},
           );
     }
     @o_zones = grep { $_->name eq $which } @o_zones if $which;
