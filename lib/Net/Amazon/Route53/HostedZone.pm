@@ -7,12 +7,52 @@ use XML::Bare;
 
 use Net::Amazon::Route53::ResourceRecordSet;
 
+=head2 SYNOPSIS
+
+    my $hostedzone = Net::Amazon::Route53::HostedZone->new(...);
+    # use methods on $hostedzone
+
+=head2 ATTRIBUTES
+
+=head3 route53
+
+A L<Net::Amazon::Route53> object, needed and used to perform requests
+to Amazon's Route 53 service
+
+=cut
+
 has 'route53' => ( is => 'rw', isa => 'Net::Amazon::Route53', required => 1, );
+
+=head3 id
+
+The hosted zone's id
+
+=head3 name
+
+The hosted zone's name; ends in a dot, i.e.
+
+    example.com.
+
+=head3 callerreference
+
+The CallerReference attribute for the hosted zone
+
+=head3 comment
+
+Any Comment given when the zone is created
+
+=cut
 
 has 'id'              => ( is => 'rw', isa => 'Str', required => 1, default => '' );
 has 'name'            => ( is => 'rw', isa => 'Str', required => 1, default => '' );
 has 'callerreference' => ( is => 'rw', isa => 'Str', required => 1, default => '' );
 has 'comment'         => ( is => 'rw', isa => 'Str', required => 1, default => '' );
+
+=head3 nameservers
+
+Lazily loaded, returns a list of the nameservers authoritative for this zone
+
+=cut
 
 has 'nameservers' => (
     is      => 'rw',
@@ -26,6 +66,13 @@ has 'nameservers' => (
         \@nameservers;
     }
 );
+
+=head3 resource_record_sets
+
+Lazily loaded, returns a list of the resource record sets
+(L<Net::Amazon::Route53::ResourceRecordSet> objects) for this zone.
+
+=cut
 
 has 'resource_record_sets' => (
     is      => 'rw',
