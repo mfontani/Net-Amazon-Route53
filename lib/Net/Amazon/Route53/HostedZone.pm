@@ -63,7 +63,7 @@ has 'nameservers' => (
     lazy    => 1,
     default => sub {
         my $self        = shift;
-        my $respo       = $self->route53->request( 'get', 'https://route53.amazonaws.com/2010-10-01/' . $self->id );
+        my $resp        = $self->route53->request( 'get', 'https://route53.amazonaws.com/2010-10-01/' . $self->id );
         my @nameservers = @{ $resp->{DelegationSet}{NameServers}{NameServer} };
         \@nameservers;
     }
