@@ -112,6 +112,7 @@ sub request
         $content ? $content : undef,
     );
     my $rc = $self->ua->request( $request );
+    #use YAML;warn "\n\nmethod $method to $uri @_: " . Dump($rc);
     my $resp = XML::Bare::xmlin( $rc->decoded_content );
     die "Error: $resp->{Error}{Code}\n" if ( exists $resp->{Error} );
     return $resp;
