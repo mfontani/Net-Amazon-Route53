@@ -84,6 +84,7 @@ has 'resource_record_sets' => (
         my @resource_record_sets;
         my $rc = $self->route53->request( 'get', 'https://route53.amazonaws.com/2010-10-01/' . $self->id . '/rrset' );
         my $resp = XML::Bare::xmlin( $rc->decoded_content );
+        die "Error: $resp->{Error}{Code}" if ( exists $resp->{Error} );
         for my $res ( @{ $resp->{ResourceRecordSets}{ResourceRecordSet} } ) {
             push @resource_record_sets,
               Net::Amazon::Route53::ResourceRecordSet->new(
