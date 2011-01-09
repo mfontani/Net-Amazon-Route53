@@ -213,6 +213,13 @@ C<ABCDEFG>.
 The AWS key to be used; in the above example it could be
 C<12345>.
 
+=item B<-wait>
+
+For the commands which support it, waits for the change requested to be in
+C<INSYNC> status before returning.  This is done by querying for the change
+status every 2 seconds until the change is C<INSYNC>. Defaults to 0, meaning
+the requests return immediately.
+
 =item B<-help>
 
 Prints the help page and exits
@@ -252,12 +259,14 @@ Possible actions are:
 
 =item B<create>
 
-Needs C<--comment> and C<--callerreference>. Creates a new zone
+Needs C<--comment> and C<--callerreference>. Creates a new zone. Supports the
+C<--wait> option.
 
 =item B<delete>
 
-Deletes the zone. The zone needs to be empty (containing only NS and SOA entries)
-before Amazon's Route53 allows its deletion.
+Deletes the zone. The zone needs to be empty (containing only NS and SOA
+entries) before Amazon's Route53 allows its deletion. Supports the C<--wait>
+option.
 
 =back
 
