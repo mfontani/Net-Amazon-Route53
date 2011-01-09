@@ -5,7 +5,7 @@ package Net::Amazon::Route53::HostedZone;
 use Mouse;
 use XML::Bare;
 
-use Net::Amazon::Route53::ResourceRecordSet;
+use Net::Amazon::Route53::Change;
 
 =head2 SYNOPSIS
 
@@ -105,6 +105,58 @@ has 'resource_record_sets' => (
         \@resource_record_sets;
     }
 );
+
+=head2 METHODS
+
+=head3 create
+
+Creates a new zone. Needs all the attributes (name, callerreference and comment).
+
+Takes an optional boolean parameter, C<wait>, to indicate whether the request should
+return straightaway (default, or when C<wait> is C<0>) or it should wait until the
+request is C<INSYNC> according to the Change's status.
+
+Returns a L<Net::Amazon::Route53::Change> object representing the change requested.
+
+=cut
+
+sub create {
+    my $self = shift;
+    my $wait = shift;
+    $wait = 0 if !defined $wait;
+    $self->name =~ /\.$/ or die "Zone name needs to end in a dot, to be created\n";
+    my $request_xml_str = <<'ENDXML';
+<?xml version="1.0" encoding="UTF-8"?>
+<CreateHostedZoneRequest xmlns="https://route53.amazonaws.com/doc/2010-10-01/">
+    <Name>%s</Name>
+    <CallerReference>%s</CallerReference>
+    <HostedZoneConfig>
+        <Comment>%s</Comment>
+    </HostedZoneConfig>
+</CreateHostedZoneRequest>
+ENDXML
+    my $request_xml = sprintf( $request_xml_str, $self->name, $self->callerreference, $self->comment );
+    my $rc = $self->route53->request(
+        'post',
+        'https://route53.amazonaws.com/2010-10-01/hostedzone',
+        Content => $request_xml,
+    );
+    my $resp = XML::Bare::xmlin( $rc->decoded_content );
+    die "Error: $resp->{Error}{Code}" if ( exists $resp->{Error} );
+    $self->id( $resp->{HostedZone}{Id});
+    $self->nameservers( [ map { $_->{NameServer} } @{ $resp->{DelegationSet}{NameServers} } ] );
+    my $change = Net::Amazon::Route53::Change->new(
+        route53 => $route53,
+        (map { lc($_) => $resp->{ChangeInfo}{$_} } qw/Id Status SubmittedAt/),
+    );
+    $change->refresh();
+    return $change if !$wait;
+    while ( lc($change->status) ne 'insync' ) {
+        sleep 2;
+        $change->refresh();
+    }
+    return $change;
+}
 
 no Mouse;
 1;
