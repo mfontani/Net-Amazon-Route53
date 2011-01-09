@@ -140,6 +140,7 @@ sub get_hosted_zones {
 =head1 SEE ALSO
 
 L<Net::Amazon::Route53::HostedZone>
+L<http://docs.amazonwebservices.com/Route53/latest/APIReference/>
 
 =cut
 
