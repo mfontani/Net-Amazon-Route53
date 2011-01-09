@@ -27,6 +27,7 @@ my %options = (
     type            => '',
     name            => '',
     ttl             => '',
+    value           => '',
 );
 
 GetOptions(
@@ -43,6 +44,7 @@ GetOptions(
     'type=s'            => \$options{type},
     'name=s'            => \$options{name},
     'ttl=s'             => \$options{ttl},
+    'value=s'           => \$options{value},
 
 ) or pod2usage(1);
 pod2usage(1) if $help;
@@ -190,6 +192,9 @@ sub do_record
         for my $rrs ( @{ $hosted_zones[0]->resource_record_sets() } ) {
             next if $options{type} and uc($rrs->type) ne uc($options{type});
             next if $options{ttl} and $rrs->ttl ne $options{ttl};
+            if ( length $options{value} ) {
+                next if !scalar grep { $_ eq $options{value} } @{ $rrs->values };
+            }
             my $name = $rrs->name;
             $name =~ s/\\052/\*/g;
             next if $options{name} and $name ne $options{name};
@@ -330,6 +335,7 @@ the zone.
 If a C<--type> is given, it lists only the records of the given type.
 If a C<--name> is given, it lists only the records which have the given name.
 If a C<--ttl> is given, it lists only the records which have the given TTL.
+If a C<--value> is given, it lists only the records which have a value matching the given one.
 
 =back
 
