@@ -3,6 +3,7 @@ use warnings;
 
 package Net::Amazon::Route53;
 use LWP::UserAgent;
+use HTTP::Request;
 use Digest::HMAC_SHA1;
 use MIME::Base64;
 use XML::Bare;
@@ -83,7 +84,7 @@ sub request
     my $uri    = shift;
 
     return unless $method;
-    return unless ( $method eq 'get' or $method eq 'post' );
+    return unless ( $method eq 'get' or $method eq 'post' or $method eq 'delete' );
     return unless $uri;
 
     # Get amazon server's date
@@ -97,13 +98,20 @@ sub request
     $hmac->add($date);
     my $signature = encode_base64( $hmac->digest, '' );
 
-    my $rc = $self->ua->$method(
-        $uri,
+    my %options = (
         'Date' => $date,
         'X-Amzn-Authorization' =>
           sprintf( "AWS3-HTTPS AWSAccessKeyId=%s,Algorithm=HmacSHA1,Signature=%s", $self->id, $signature ),
         @_
     );
+    my $content = delete $options{Content};
+    my $request = HTTP::Request->new(
+        uc $method,
+        $uri,
+        [ map { $_ => $options{$_} } keys %options],
+        $content ? $content : undef,
+    );
+    my $rc = $self->ua->request( $request );
     my $resp = XML::Bare::xmlin( $rc->decoded_content );
     die "Error: $resp->{Error}{Code}\n" if ( exists $resp->{Error} );
     return $resp;
