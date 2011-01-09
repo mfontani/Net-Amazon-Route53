@@ -5,6 +5,7 @@ package Net::Amazon::Route53::HostedZone;
 use Mouse;
 
 use Net::Amazon::Route53::Change;
+use Net::Amazon::Route53::ResourceRecordSet;
 
 =head2 SYNOPSIS
 
