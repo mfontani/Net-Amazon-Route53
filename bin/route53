@@ -24,6 +24,7 @@ my %options = (
     comment         => '',
     callerreference => '',
     wait            => 0,
+    type            => '',
 );
 
 GetOptions(
@@ -37,6 +38,7 @@ GetOptions(
     'comment=s'         => \$options{comment},
     'callerreference=s' => \$options{callerreference},
     'wait'              => \$options{wait},
+    'type=s'            => \$options{type},
 
 ) or pod2usage(1);
 pod2usage(1) if $help;
@@ -72,6 +74,7 @@ my %actions = (
     'list'        => \&do_list,
     'nameservers' => \&do_nameservers,
     'zone'        => \&do_zone,
+    'records'     => \&do_records,
 );
 my $action = shift @ARGV;
 die "Need an action\nUse route53 --help to list the allowed actions\n" unless defined $action;
@@ -164,6 +167,38 @@ sub do_zone
     die "Unrecognised action/zone $which\n" if ( $which !~ /\.$/ );
 
     do_nameservers( $route53, $which );
+}
+
+sub do_records
+{
+    my $route53 = shift;
+    my $which   = shift;
+    die "Need a zone or action name\n" if !$which;
+
+    # actions
+    if ( $which eq 'list' or $which =~ /\.$/ ) {
+        my $zone = ($which =~ /\.$/ ? $which : shift );
+        die "Need a zone name to list\n"   if !$zone;
+        die "Zone needs to end in a dot\n" if $zone !~ /\.$/;
+        my @hosted_zones = $route53->get_hosted_zones($zone);
+        return "No such hosted zone $zone\n" if ( !@hosted_zones );
+        my $output = '';
+        for my $rrs ( @{ $hosted_zones[0]->resource_record_sets() } ) {
+            next if $options{type} and uc($rrs->type) ne uc($options{type});
+            my $name = $rrs->name;
+            $name =~ s/\\052/\*/g;
+            $output .= sprintf("%s %s %s %s\n",
+                $name,
+                $rrs->type,
+                $rrs->ttl,
+                join(' ', @{$rrs->values}),
+            );
+        }
+        return $output;
+    }
+
+    # Not an action
+    die "Unrecognised action $which\n";
 }
 
 __END__
@@ -272,6 +307,24 @@ option.
 
 =back
 
+=item B<records>
+
+Performs actions on a specific DNS zone records. A DNS zone name must be given.
+If no action is provided, it lists all records for the zone.
+
+Possible actions are:
+
+=over 8
+
+=item B<list>
+
+This is the default action if no action is specified. Lists all DNS records for
+the zone.
+
+If a C<--type> is given, it lists only the records of the given type.
+
+=back
+
 =back
 
 =head1 EXAMPLES
@@ -368,6 +421,23 @@ Deletes a zone (assuming the zone contains only C<SOA> and C<NS> records):
 You can optionally specify C<--wait> to wait for the zone to have been
 effectively deleted. Otherwise the command returns as soon as the request
 has been sent to Route 53.
+
+=head2 List all DNS records for a zone
+
+Lists all DNS records for a zone:
+
+    $ route53 --keyname my-aws-account records list example.com.
+    example.com. A 14400 127.0.0.1
+    example.com. MX 14400 127.0.0.1
+    example.com. NS 172800 ns-123.awsdns-123.com. ns-123.awsdns-123.co.uk. ns-123.awsdns-123.org.
+    example.com. SOA 900 ns-123.awsdns-123.com. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400
+    *.example.com. A 300 127.0.0.1
+
+You can optionally specify C<--type> to display only DNS records of a given type:
+
+    $ route53 --keyname my-aws-account records list example.com. --type A
+    example.com. A 14400 127.0.0.1
+    *.example.com. A 300 127.0.0.1
 
 =cut
 
