@@ -260,7 +260,7 @@ sub do_record
             type => uc $options{type},
             values => $options{value},
         );
-        eval { $records[0]->create( wait => $options{wait}, @_ ) }
+        eval { $new_record->create( wait => $options{wait}, @_ ) }
           or die "Could not create record: $@\n";
         return "Record created\n";
     }
