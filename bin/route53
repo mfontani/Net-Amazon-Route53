@@ -30,10 +30,10 @@ GetOptions(
 pod2usage(1) if $help;
 pod2usage( -exitstatus => 0, -verbose => 2 ) if $man;
 
+die("Either provide a keyname/keyfile, or a key/id\n") if ( !length $keyname and (!length $key or !length $id) );
 if ( length $keyname ) {
     die("Need a keyfile when a keyname is given\n")        if ( !length $keyfile );
     die("No such keyfile: $keyfile\n")                     if ( !-f $keyfile );
-    die("Either provide a keyname/keyfile, or a key/id\n") if ( length $key or length $id );
     my $keyfile_contents = do {
         local $/;
         open my $f, '<', $keyfile or die "Cannot open $keyfile for reading: $!";
