@@ -3,7 +3,6 @@ use warnings;
 
 package Net::Amazon::Route53::Change;
 use Mouse;
-use XML::Bare;
 
 =head2 SYNOPSIS
 
@@ -55,10 +54,8 @@ Refresh the details of the change. When performed, the object's status is curren
 sub refresh {
     my $self = shift;
     die "Cannot refresh without an id\n" unless length $self->id;
-    my $rc = $self->route53->request( 'get', 'https://route53.amazonaws.com/2010-10-01/' . $self->id, );
-    my $resp = XML::Bare::xmlin( $rc->decoded_content );
-    die "Error: $resp->{Error}{Code}" if ( exists $resp->{Error} );
-    for ( qw/Id Status SubmittedAt/ ) {
+    my $resp = $self->route53->request( 'get', 'https://route53.amazonaws.com/2010-10-01/' . $self->id, );
+    for (qw/Id Status SubmittedAt/) {
         my $method = lc $_;
         $self->$method( $resp->{ChangeInfo}{$_} );
     }
