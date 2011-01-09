@@ -27,8 +27,8 @@ my %options = (
     type            => '',
     name            => '',
     ttl             => '',
-    value           => '',
 );
+my (@_value);
 
 GetOptions(
     'help|?'    => \$help,
@@ -44,9 +44,10 @@ GetOptions(
     'type=s'            => \$options{type},
     'name=s'            => \$options{name},
     'ttl=s'             => \$options{ttl},
-    'value=s'           => \$options{value},
+    'value=s'           => \@_value,
 
 ) or pod2usage(1);
+$options{value} = \@_value;
 pod2usage(1) if $help;
 pod2usage( -exitstatus => 0, -verbose => 2 ) if $man;
 
@@ -192,8 +193,8 @@ sub do_record
         for my $rrs ( @{ $hosted_zones[0]->resource_record_sets() } ) {
             next if $options{type} and uc($rrs->type) ne uc($options{type});
             next if $options{ttl} and $rrs->ttl ne $options{ttl};
-            if ( length $options{value} ) {
-                next if !scalar grep { $_ eq $options{value} } @{ $rrs->values };
+            if ( @{$options{value}} and @{$options{value}} > 0 ) {
+                next if !scalar grep { my $v = $_; scalar grep { $_ eq $v } @{$options{value}} } @{ $rrs->values };
             }
             my $name = $rrs->name;
             $name =~ s/\\052/\*/g;
@@ -221,7 +222,7 @@ sub do_record
         @records = grep { $_->type eq $options{type} } @records if $options{type};
         @records = grep { $_->type eq $options{ttl} } @records if $options{ttl};
         if ( length $options{value} ) {
-            @records = grep { my $r = $_; scalar grep { $_ eq $options{value} } @{ $r->values } } @records;
+            @records = grep { my $r = $_; scalar grep { my $v = $_; scalar grep { $_ eq $v } @{$options{value}} } @{ $r->values } } @records;
         }
         die "Too many records match:\n", join(
             "\n",
