@@ -119,6 +119,7 @@ sub get_hosted_zones {
         my $rc =
           $self->request( 'get', 'https://route53.amazonaws.com/2010-10-01/hostedzone?maxitems=100' . $start_marker );
         my $resp = XML::Bare::xmlin( $rc->decoded_content );
+        die "Error: $resp->{Error}{Code}" if ( exists $resp->{Error} );
         push @zones, ( ref $resp->{HostedZones} eq 'ARRAY' ? @{ $resp->{HostedZones} } : $resp->{HostedZones} );
         last if $resp->{IsTruncated} eq 'false';
         $start_marker = '?marker=' . $resp->{NextMarker};

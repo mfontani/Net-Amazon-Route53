@@ -62,6 +62,7 @@ has 'nameservers' => (
         my $self        = shift;
         my $rc          = $self->route53->request( 'get', 'https://route53.amazonaws.com/2010-10-01/' . $self->id );
         my $resp        = XML::Bare::xmlin( $rc->decoded_content );
+        die "Error: $resp->{Error}{Code}" if ( exists $resp->{Error} );
         my @nameservers = @{ $resp->{DelegationSet}{NameServers}{NameServer} };
         \@nameservers;
     }
