@@ -172,6 +172,10 @@ __END__
 
 route53 - Manage your DNS entries on Amazon's Route53 service
 
+=head1 DESCRIPTION
+
+B<route53> will manage your Amazon Route 53 account
+
 =head1 SYNOPSIS
 
 route53 {key and id} [options] action [action arguments]
@@ -259,9 +263,92 @@ before Amazon's Route53 allows its deletion.
 
 =back
 
-=head1 DESCRIPTION
+=head1 EXAMPLES
 
-B<route53> will manage your Amazon Route 53 account
+=head2 Specify your credentials
+
+You need to specify your credentials with one of the following notations.
+All the examples below use the C<--keyname> notation, defaulting to using
+the C<~/.aws-secrets> file.
+
+    # Uses ~/.aws-secrets as repository, key name is specified
+    $ route53 --keyname my-aws-keyname
+
+    # Uses the given key file and key name
+    $ route53 --keyfile ~/.aws --keyname my-aws-keyname
+
+    # Uses the given key and id
+    $ route53 --key ABCDE --id DEFG
+
+=head2 List your zones
+
+Lists the zones names, ids and comments:
+
+    $ route53 --keyname my-aws-account list
+    Hosted zone:
+      id: /hostedzone/ABCDEFG
+      name: example.com.
+      callerreference: FGHIJK
+      comment: Zone for example.com.
+    Hosted zone:
+      id: /hostedzone/FGHJKL
+      name: anotherexample.com.
+      callerreference: QWERTY
+      comment: Zone for anotherexample.com.
+
+=head2 Get all nameservers (and details) for all zones
+
+Displayes a verbose list of the zone details and the nameservers
+which are authoritative for the zone:
+
+    $ route53 --keyname my-aws-account nameservers
+    Hosted zone:
+      id: /hostedzone/ABCDEFG
+      name: example.com.
+      callerreference: FGHIJK
+      comment: Zone for example.com.
+      nameserver: ns-123.awsdns-123.com
+      nameserver: ns-123.awsdns-123.co.uk
+      nameserver: ns-123.awsdns-123.org
+    Hosted zone:
+      id: /hostedzone/FGHJKL
+      name: anotherexample.com.
+      callerreference: QWERTY
+      comment: Zone for anotherexample.com.
+      nameserver: ns-456.awsdns-456.com
+      nameserver: ns-456.awsdns-456.co.uk
+      nameserver: ns-456.awsdns-456.org
+
+=head2 Get just the nameservers for a specific zone
+
+Displays a terse list of the nameservers, one per line:
+
+    $ route53 --keyname my-aws-account nameservers example.com.
+    ns-123.awsdns-123.com
+    ns-123.awsdns-123.co.uk
+    ns-123.awsdns-123.org
+
+This allows the nameservers to be used in scripting:
+
+    $ for nameserver in
+        $( route53 --keyname my-aws-account nameservers example.com. );
+      do
+        # do whatever you want with $nameserver
+      done;
+
+=head2 Create a new zone
+
+Creates a new zone:
+
+    $ route53 --keyname my-aws-account zone create example.com. \
+        --comment 'Zone for example.com.'
+        --callerreference 'unique id for this'
+
+=head2 Delete a zone
+
+Deletes a zone (assuming the zone contains only C<SOA> and C<NS> records):
+
+    $ route53 --keyname my-aws-account zone delete example.com.
 
 =cut
 
