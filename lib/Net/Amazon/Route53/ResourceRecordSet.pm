@@ -10,7 +10,11 @@ use XML::Bare;
     my $resource = Net::Amazon::Route53::ResourceRecordSet->new(...);
     # use methods on $resource
 
+=cut
+
 =head2 ATTRIBUTES
+
+=cut
 
 =head3 route53
 
