@@ -76,7 +76,8 @@ request. Dies on error, showing the request's error given by the API.
 
 =cut
 
-sub request {
+sub request
+{
     my $self   = shift;
     my $method = shift;
     my $uri    = shift;
@@ -121,7 +122,8 @@ Takes an optional parameter indicating the name of the wanted hosted zone.
 
 =cut
 
-sub get_hosted_zones {
+sub get_hosted_zones
+{
     my $self         = shift;
     my $which        = shift;
     my $start_marker = '';
