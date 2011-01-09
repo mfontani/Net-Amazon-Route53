@@ -53,5 +53,76 @@ has 'ttl'    => ( is => 'rw', isa => 'Int',      required => 1 );
 has 'type'   => ( is => 'rw', isa => 'Str',      required => 1 );
 has 'values' => ( is => 'rw', isa => 'ArrayRef', required => 1, default => sub { [] } );
 
+=head2 METHODS
+
+=cut
+
+=head3 delete
+
+    $rrs->delete();
+
+Asks Route 53 to delete the associated record. This should be used only when
+you want to delete the resource, not when changing a resource. In that case,
+use the C<change> method instead, which takes care of creating a unique change
+in which the record is first deleted with the current details and then created
+with the new details.
+
+Takes an optional boolean parameter, C<wait>, to indicate whether the request should
+return straightaway (default, or when C<wait> is C<0>) or it should wait until the
+request is C<INSYNC> according to the Change's status.
+
+Returns a L<Net::Amazon::Route53::Change> object representing the change requested.
+
+=cut
+
+sub delete
+{
+    my $self = shift;
+    my $wait = shift;
+    $wait = 0 if !defined $wait;
+    my $request_xml_str = <<'ENDXML';
+<?xml version="1.0" encoding="UTF-8"?>
+<ChangeResourceRecordSetsRequest xmlns="https://route53.amazonaws.com/doc/2010-10-01/">
+   <ChangeBatch>
+      <Comment>This change batch deletes the %s record for %s</Comment>
+      <Changes>
+        <Change>
+            <Action>DELETE</Action>
+            <ResourceRecordSet>
+               <Name>%s</Name>
+               <Type>%s</Type>
+               <TTL>%s</TTL>
+               <ResourceRecords>
+                  <ResourceRecord>
+                    %s
+                  </ResourceRecord>
+               </ResourceRecords>
+            </ResourceRecordSet>
+         </Change>
+        </Changes>
+   </ChangeBatch>
+</ChangeResourceRecordSetsRequest>
+ENDXML
+    my $request_xml = sprintf( $request_xml_str,
+        $self->type, $self->name, $self->name, $self->type, $self->ttl,
+        join( "\n", map { "<Value>$_</Value>" } @{ $self->values } ) );
+    my $resp = $self->route53->request(
+        'post',
+        'https://route53.amazonaws.com/2010-10-01/' . $self->hostedzone->id . '/rrset',
+        Content => $request_xml
+    );
+    my $change = Net::Amazon::Route53::Change->new(
+        route53 => $self->route53,
+        ( map { lc($_) => $resp->{ChangeInfo}{$_} } qw/Id Status SubmittedAt/ ),
+    );
+    $change->refresh();
+    return $change if !$wait;
+    while ( lc( $change->status ) ne 'insync' ) {
+        sleep 2;
+        $change->refresh();
+    }
+    return $change;
+}
+
 no Mouse;
 1;
