@@ -217,13 +217,13 @@ sub do_record
 
         my @records = @{ $hosted_zones[0]->resource_record_sets() };
         @records = grep { $_->name eq $options{name} } @records if length $options{name};
-        die "No such record $options{name} for zone $zone\n" if (!@records);
         # weed out by record type, ttl, and value
         @records = grep { $_->type eq $options{type} } @records if $options{type};
         @records = grep { $_->type eq $options{ttl} } @records if $options{ttl};
-        if ( length $options{value} ) {
-            @records = grep { my $r = $_; scalar grep { my $v = $_; scalar grep { $_ eq $v } @{$options{value}} } @{ $r->values } } @records;
+        if ( @{ $options{value} } ) {
+            @records = grep { my $r = $_; grep { my $v = $_; scalar grep { $_ eq $v } @{$options{value}} } @{ $r->values } } @records;
         }
+        die "No record matches\n" if (!@records);
         die "Too many records match:\n", join(
             "\n",
             map {
