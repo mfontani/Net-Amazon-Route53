@@ -250,7 +250,7 @@ sub do_record
         push @errors, "Need a --type for the new record\n" if !length $options{type};
         push @errors, "Need one or more --value for the new record\n" if !@{$options{value}};
         push @errors, "Unrecognised --type for record: $options{type}\n"
-            if ( $options{type} !~ /^(A|AAAA|CNAME|MX|NS|PTR|SOA|SPF|SRV|TXT)$/i );
+            if ( length $options{type} and $options{type} !~ /^(A|AAAA|CNAME|MX|NS|PTR|SOA|SPF|SRV|TXT)$/i );
         die join('',@errors) if @errors;
         my $new_record = Net::Amazon::Route53::ResourceRecordSet->new(
             route53 => $route53,
