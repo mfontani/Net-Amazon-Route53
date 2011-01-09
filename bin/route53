@@ -175,6 +175,12 @@ a number of arguments:
 Lists the hosted zones currently associated with the account.
 Takes no arguments.
 
+=item B<nameservers>
+
+Lists the nameservers for all the hosted zones currently associated with the
+account. Takes a hosted zone name as an optional argument to just show the
+nameservers associated with that zone.
+
 =back
 
 =head1 DESCRIPTION
