@@ -238,6 +238,32 @@ sub do_record
           or die "Could not delete record: $@\n";
         return "Record deleted\n";
     }
+    if ( $which eq 'create' ) {
+        my $zone = shift;
+        die "Need a zone name to create a record for\n" if !$zone;
+        die "Zone needs to end in a dot\n" if $zone !~ /\.$/;
+        my @hosted_zones = $route53->get_hosted_zones($zone);
+        return "No such hosted zone $zone\n" if ( !@hosted_zones );
+        my @errors;
+        push @errors, "Need a --name for the new record\n" if !length $options{name};
+        push @errors, "Need a --ttl for the new record\n" if !length $options{ttl};
+        push @errors, "Need a --type for the new record\n" if !length $options{type};
+        push @errors, "Need one or more --value for the new record\n" if !@{$options{value}};
+        push @errors, "Unrecognised --type for record: $options{type}\n"
+            if ( $options{type} !~ /^(A|AAAA|CNAME|MX|NS|PTR|SOA|SPF|SRV|TXT)$/i );
+        die "@errors" if @errors;
+        my $new_record = Net::Amazon::Route53::ResourceRecordSet->new(
+            route53 => $route53,
+            hostedzone => $hosted_zones[0],
+            name => $options{name},
+            ttl => $options{ttl},
+            type => uc $options{type},
+            values => $options{value},
+        );
+        eval { $records[0]->create( wait => $options{wait}, @_ ) }
+          or die "Could not create record: $@\n";
+        return "Record created\n";
+    }
 
     # Not an action
     die "Unrecognised action $which\n";
@@ -374,6 +400,12 @@ Deletes one DNS record for the zone given. Can only delete a record which
 is univocally identified by filtering the records list by C<--name>, C<--type>,
 C<--ttl> and C<--value>. Dies listing the matching records if too many entries
 match. Supports the C<--wait> option.
+
+=item B<create>
+
+Creates a DNS record for the zone given. Needs all the following options
+in order to create the record: C<--name>, C<--type>, C<--ttl> and one or
+more C<--value>. Supports the C<--wait> option.
 
 =back
 
@@ -513,6 +545,14 @@ Or can read the error message given in case there are too many matching records:
 The lone record deletion:
 
     $ route53 --keyname my-aws-account record delete example.com. --type A --ttl 300
+
+=head2 Create a new DNS record for the zone
+
+This adds a new record for the zone:
+
+    $ route53 --keyname my-aws-account record create example.com. \
+        --name test.example.com. --type A --ttl 300 \
+        --value 127.0.0.1
 
 =cut
 
