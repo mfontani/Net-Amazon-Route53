@@ -142,10 +142,10 @@ ENDXML
     my $resp = $self->route53->request(
         'post',
         'https://route53.amazonaws.com/2010-10-01/hostedzone',
+        'content-type' => 'text/xml; charset=UTF-8',
         Content => $request_xml,
     );
     $self->id( $resp->{HostedZone}{Id} );
-    $self->nameservers( [ map { $_->{NameServer} } @{ $resp->{DelegationSet}{NameServers} } ] );
     my $change = Net::Amazon::Route53::Change->new(
         route53 => $self->route53,
         ( map { lc($_) => $resp->{ChangeInfo}{$_} } qw/Id Status SubmittedAt/ ),
