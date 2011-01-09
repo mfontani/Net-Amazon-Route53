@@ -57,7 +57,8 @@ Refresh the details of the change. When performed, the object's status is curren
 
 =cut
 
-sub refresh {
+sub refresh
+{
     my $self = shift;
     die "Cannot refresh without an id\n" unless length $self->id;
     my $resp = $self->route53->request( 'get', 'https://route53.amazonaws.com/2010-10-01/' . $self->id, );
