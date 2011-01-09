@@ -60,7 +60,7 @@ sub refresh {
     die "Error: $resp->{Error}{Code}" if ( exists $resp->{Error} );
     for ( qw/Id Status SubmittedAt/ ) {
         my $method = lc $_;
-        $self->$method( $res->{ChangeInfo}{$_} );
+        $self->$method( $resp->{ChangeInfo}{$_} );
     }
 }
 
