@@ -57,6 +57,72 @@ has 'values' => ( is => 'rw', isa => 'ArrayRef', required => 1, default => sub {
 
 =cut
 
+=head3 create
+
+    my $record = Net::Amazon::Route53::ResourceRecordSet->new( ... );
+    $record->create;
+
+Creates a new record. Needs all the attributes (name, ttl, type and values).
+
+Takes an optional boolean parameter, C<wait>, to indicate whether the request should
+return straightaway (default, or when C<wait> is C<0>) or it should wait until the
+request is C<INSYNC> according to the Change's status.
+
+Returns a L<Net::Amazon::Route53::Change> object representing the change requested.
+
+=cut
+
+sub create
+{
+    my $self = shift;
+    my $wait = shift;
+    $wait = 0 if !defined $wait;
+    $self->name =~ /\.$/ or die "Zone name needs to end in a dot, to be created\n";
+    my $request_xml_str = <<'ENDXML';
+<?xml version="1.0" encoding="UTF-8"?>
+<ChangeResourceRecordSetsRequest xmlns="https://route53.amazonaws.com/doc/2010-10-01/">
+   <ChangeBatch>
+      <Comment>This change batch creates the %s record for %s</Comment>
+      <Changes>
+        <Change>
+            <Action>CREATE</Action>
+            <ResourceRecordSet>
+               <Name>%s</Name>
+               <Type>%s</Type>
+               <TTL>%s</TTL>
+               <ResourceRecords>
+                  <ResourceRecord>
+                    %s
+                  </ResourceRecord>
+               </ResourceRecords>
+            </ResourceRecordSet>
+         </Change>
+        </Changes>
+   </ChangeBatch>
+</ChangeResourceRecordSetsRequest>
+ENDXML
+    my $request_xml = sprintf( $request_xml_str,
+        $self->type, $self->name, $self->name, $self->type, $self->ttl,
+        join( "\n", map { "<Value>$_</Value>" } @{ $self->values } ) );
+    my $resp = $self->route53->request(
+        'post',
+        'https://route53.amazonaws.com/2010-10-01/' . $self->hostedzone->id . '/rrset',
+        Content => $request_xml
+    );
+    my $change = Net::Amazon::Route53::Change->new(
+        route53 => $self->route53,
+        ( map { lc($_) => $resp->{ChangeInfo}{$_} } qw/Id Status SubmittedAt/ ),
+    );
+    $change->refresh();
+    return $change if !$wait;
+    while ( lc( $change->status ) ne 'insync' ) {
+        sleep 2;
+        $change->refresh();
+    }
+    return $change;
+}
+
+
 =head3 delete
 
     $rrs->delete();
