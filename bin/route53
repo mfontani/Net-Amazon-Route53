@@ -54,7 +54,7 @@ if ( length $key or length $id ) {
     die("Both id and key must be given\n") if ( !length $key or !length $id );
 }
 
-die "Need an action\n" if (!@ARGV);
+pod2usage("Need an action") if (!@ARGV);
 
 my %actions = (
     'list'        => \&do_list,
