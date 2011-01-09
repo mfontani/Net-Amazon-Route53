@@ -94,6 +94,7 @@ sub request {
         'Date' => $date,
         'X-Amzn-Authorization' =>
           sprintf( "AWS3-HTTPS AWSAccessKeyId=%s,Algorithm=HmacSHA1,Signature=%s", $self->id, $signature ),
+        @_
     );
 }
 
