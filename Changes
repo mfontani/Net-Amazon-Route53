@@ -1,0 +1,11 @@
+v0.110090 - 2011-01-09
+    - Use either ~/.aws-secrets or another keyfile for credentials
+    - Use given key and id for credentials
+    - Get list of hosted zones for the account
+    - Create a new hosted zone, optionally waiting for the request to be completed
+    - Delete a hosted zone, optionally waiting for the request to be completed
+    - Get nameservers details for a hosted zone
+    - List all records in a hosted zone
+    - List records matching a name, type, ttl or values for a hosted zone
+    - Delete a record matching a name, type, ttl or value for a hosted zone
+    - Create a new record of given name, type, ttl and value(s) for a hosted zone
