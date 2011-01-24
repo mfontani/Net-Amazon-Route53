@@ -151,7 +151,7 @@ sub get_hosted_zones
           Net::Amazon::Route53::HostedZone->new(
             route53 => $self,
             ( map { lc($_) => $zone->{$_} } qw/Id Name CallerReference/ ),
-            comment => $zone->{Config}{Comment},
+            comment => (exists $zone->{Config} and ref $zone->{Config} eq 'HASH') ?  $zone->{Config}{Comment} : '',
           );
     }
     @o_zones = grep { $_->name eq $which } @o_zones if $which;
