@@ -143,7 +143,6 @@ sub do_zone
         my $zone = shift;
         die "Need a zone name to create\n"                                 if !$zone;
         die "Zone needs to end in a dot\n"                                 if $zone !~ /\.$/;
-        die "No comment specified; please use --comment\n"                 if !length $options{comment};
         die "No callerreference specified; please use --callerreference\n" if !length $options{callerreference};
         print
           "Creating new zone '$zone'\n",
