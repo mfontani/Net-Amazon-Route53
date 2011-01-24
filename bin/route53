@@ -51,9 +51,9 @@ $options{value} = \@_value;
 pod2usage(1) if $help;
 pod2usage( -exitstatus => 0, -verbose => 2 ) if $man;
 
-die("Either provide a keyname/keyfile, or a key/id\n") if ( !length $keyname and ( !length $key or !length $id ) );
+pod2usage("Either provide a keyname/keyfile, or a key/id\n") if ( !length $keyname and ( !length $key or !length $id ) );
 if ( length $keyname ) {
-    die("Need a keyfile when a keyname is given\n") if ( !length $keyfile );
+    pod2usage("Need a keyfile when a keyname is given\n") if ( !length $keyfile );
     die("No such keyfile: $keyfile\n") if ( !-f $keyfile );
     my $keyfile_contents = do {
         local $/;
@@ -72,7 +72,7 @@ if ( length $keyname ) {
     $keyfile = $keyname = '';
 }
 if ( length $key or length $id ) {
-    die("Both id and key must be given\n") if ( !length $key or !length $id );
+    pod2usage("Both id and key must be given\n") if ( !length $key or !length $id );
 }
 
 pod2usage("Need an action") if ( !@ARGV );
@@ -84,8 +84,8 @@ my %actions = (
     'record'      => \&do_record,
 );
 my $action = shift @ARGV;
-die "Need an action\nUse route53 --help to list the allowed actions\n" unless defined $action;
-die "Unrecognised action: $action\nUse route53 --help to list the allowed actions\n" unless exists $actions{$action};
+pod2usage("Need an action\nUse route53 --help to list the allowed actions") unless defined $action;
+pod2usage("Unrecognised action: $action\nUse route53 --help to list the allowed actions")unless exists $actions{$action};
 
 my $route53 = Net::Amazon::Route53->new( id => $id, key => $key );
 
