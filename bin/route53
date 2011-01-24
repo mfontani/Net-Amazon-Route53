@@ -445,7 +445,7 @@ Lists the zones names, ids and comments:
 
 =head2 Get all nameservers (and details) for all zones
 
-Displayes a verbose list of the zone details and the nameservers
+Displays a verbose list of the zone details and the nameservers
 which are authoritative for the zone:
 
     $ route53 --keyname my-aws-account nameservers
