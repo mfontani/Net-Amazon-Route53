@@ -86,6 +86,8 @@ my %actions = (
 my $action = shift @ARGV;
 pod2usage("Need an action\nUse route53 --help to list the allowed actions") unless defined $action;
 pod2usage("Unrecognised action: $action\nUse route53 --help to list the allowed actions")unless exists $actions{$action};
+pod2usage("Resource Record name need to end in a dot") if $options{name} and $options{name} !~ /\.$/;
+pod2usage("Resource Record TTL need to be numeric") if $options{ttl} and $options{ttl} !~ /^\d+$/;
 
 my $route53 = Net::Amazon::Route53->new( id => $id, key => $key );
 
