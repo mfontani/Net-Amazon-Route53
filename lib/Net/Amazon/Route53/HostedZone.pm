@@ -140,7 +140,7 @@ sub create
     </HostedZoneConfig>
 </CreateHostedZoneRequest>
 ENDXML
-    my $request_xml = sprintf( $request_xml_str, map { encode_entities($_) } $self->name, $self->callerreference, $self->comment );
+    my $request_xml = sprintf( $request_xml_str, map { $_ } $self->name, $self->callerreference, $self->comment );
     my $resp = $self->route53->request(
         'post',
         'https://route53.amazonaws.com/2010-10-01/hostedzone',
