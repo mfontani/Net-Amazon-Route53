@@ -1,3 +1,8 @@
+v0.110240 - 2011-01-24
+    - Added use_ok tests
+    - Better usage messages for bin/route53
+    - Fix for wildcard records: use \052
+
 v0.110090 - 2011-01-09
     - Use either ~/.aws-secrets or another keyfile for credentials
     - Use given key and id for credentials
