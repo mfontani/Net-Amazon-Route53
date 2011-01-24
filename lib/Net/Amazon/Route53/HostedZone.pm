@@ -3,6 +3,7 @@ use warnings;
 
 package Net::Amazon::Route53::HostedZone;
 use Mouse;
+use HTML::Entities;
 
 use Net::Amazon::Route53::Change;
 use Net::Amazon::Route53::ResourceRecordSet;
@@ -65,7 +66,7 @@ has 'nameservers' => (
     default => sub {
         my $self        = shift;
         my $resp        = $self->route53->request( 'get', 'https://route53.amazonaws.com/2010-10-01/' . $self->id );
-        my @nameservers = @{ $resp->{DelegationSet}{NameServers}{NameServer} };
+        my @nameservers = map { decode_entities($_) } @{ $resp->{DelegationSet}{NameServers}{NameServer} };
         \@nameservers;
     }
 );
@@ -91,11 +92,11 @@ has 'resource_record_sets' => (
               Net::Amazon::Route53::ResourceRecordSet->new(
                 route53    => $self->route53,
                 hostedzone => $self,
-                name       => $res->{Name},
+                name       => decode_entities($res->{Name}),
                 ttl        => $res->{TTL},
-                type       => $res->{Type},
+                type       => decode_entities($res->{Type}),
                 values     => [
-                    map { $_->{Value} } @{
+                    map { decode_entities($_->{Value}) } @{
                         ref $res->{ResourceRecords}{ResourceRecord} eq 'ARRAY'
                         ? $res->{ResourceRecords}{ResourceRecord}
                         : [ $res->{ResourceRecords}{ResourceRecord} ]
@@ -139,7 +140,7 @@ sub create
     </HostedZoneConfig>
 </CreateHostedZoneRequest>
 ENDXML
-    my $request_xml = sprintf( $request_xml_str, $self->name, $self->callerreference, $self->comment );
+    my $request_xml = sprintf( $request_xml_str, map { encode_entities($_) } $self->name, $self->callerreference, $self->comment );
     my $resp = $self->route53->request(
         'post',
         'https://route53.amazonaws.com/2010-10-01/hostedzone',
@@ -149,7 +150,7 @@ ENDXML
     $self->id( $resp->{HostedZone}{Id} );
     my $change = Net::Amazon::Route53::Change->new(
         route53 => $self->route53,
-        ( map { lc($_) => $resp->{ChangeInfo}{$_} } qw/Id Status SubmittedAt/ ),
+        ( map { lc($_) => decode_entities($resp->{ChangeInfo}{$_}) } qw/Id Status SubmittedAt/ ),
     );
     $change->refresh();
     return $change if !$wait;
@@ -182,7 +183,7 @@ sub delete
     my $resp = $self->route53->request( 'delete', 'https://route53.amazonaws.com/2010-10-01/' . $self->id, );
     my $change = Net::Amazon::Route53::Change->new(
         route53 => $self->route53,
-        ( map { lc($_) => $resp->{ChangeInfo}{$_} } qw/Id Status SubmittedAt/ ),
+        ( map { lc($_) => decode_entities($resp->{ChangeInfo}{$_}) } qw/Id Status SubmittedAt/ ),
     );
     $change->refresh();
     return $change if !$wait;
