@@ -196,11 +196,9 @@ sub do_record
             if ( @{$options{value}} and @{$options{value}} > 0 ) {
                 next if !scalar grep { my $v = $_; scalar grep { $_ eq $v } @{$options{value}} } @{ $rrs->values };
             }
-            my $name = $rrs->name;
-            $name =~ s/\\052/\*/g;
-            next if $options{name} and $name ne $options{name};
+            next if $options{name} and $rrs->name ne $options{name};
             $output .= sprintf("%s %s %s %s\n",
-                $name,
+                $rrs->name,
                 $rrs->type,
                 $rrs->ttl,
                 join(' ', @{$rrs->values}),
@@ -227,9 +225,7 @@ sub do_record
         die "Too many records match:\n", join(
             "\n",
             map {
-                my $name = $_->name;
-                $name =~ s/\\052/\*/g;
-                sprintf( "%s %s %s %s", $name, $_->type, $_->ttl, join( ' ', @{ $_->values } ) )
+                sprintf( "%s %s %s %s", $_->name, $_->type, $_->ttl, join( ' ', @{ $_->values } ) )
               } @records
           ),
           "\n"
@@ -394,6 +390,9 @@ If a C<--name> is given, it lists only the records which have the given name.
 If a C<--ttl> is given, it lists only the records which have the given TTL.
 If a C<--value> is given, it lists only the records which have a value matching the given one.
 
+Wildcard records (i.e. C<*.example.com>) are displayed as C<\052.example.com>.
+The same format must be used to create a wildcard record.
+
 =item B<delete>
 
 Deletes one DNS record for the zone given. Can only delete a record which
@@ -515,32 +514,32 @@ Lists all DNS records for a zone:
     example.com. MX 14400 127.0.0.1
     example.com. NS 172800 ns-123.awsdns-123.com. ns-123.awsdns-123.co.uk. ns-123.awsdns-123.org.
     example.com. SOA 900 ns-123.awsdns-123.com. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400
-    *.example.com. A 300 127.0.0.1
+    \052.example.com. A 300 127.0.0.1
 
 You can optionally specify C<--type> to display only DNS records of a given type:
 
     $ route53 --keyname my-aws-account record list example.com. --type A
     example.com. A 14400 127.0.0.1
-    *.example.com. A 300 127.0.0.1
+    \052.example.com. A 300 127.0.0.1
 
 =head2 Delete a specific DNS record for a zone
 
-This example assumes we want to remove the C<*.example.com.> entry.  One can
+This example assumes we want to remove the C<\052.example.com.> entry.  One can
 check which parameters are needed to get the correct entry with the
 C<record list> first:
 
     $ route53 --keyname my-aws-account record list example.com. --type A
     example.com. A 14400 127.0.0.1
-    *.example.com. A 300 127.0.0.1
+    \052.example.com. A 300 127.0.0.1
     $ route53 --keyname my-aws-account record list example.com. --type A --ttl 300
-    *.example.com. A 300 127.0.0.1
+    \052.example.com. A 300 127.0.0.1
 
 Or can read the error message given in case there are too many matching records:
 
     $ route53 --keyname my-aws-account record delete example.com. --type A
     Too many records match:
     example.com. A 14400 127.0.0.1
-    *.example.com. A 300 127.0.0.1
+    \052.example.com. A 300 127.0.0.1
 
 The lone record deletion:
 
