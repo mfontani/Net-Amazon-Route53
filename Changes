@@ -1,3 +1,10 @@
+v0.110241 - 2011-01-24
+    - Dying (with error) in case the response is not a success
+    - route53 executable
+    - Fix if response does not match Amazon's examples
+      Empty <Config/> prevented displaying the zone list
+      Thanks to Šime Ramov for the bug report
+
 v0.110240 - 2011-01-24
     - Added use_ok tests
     - Better usage messages for bin/route53
