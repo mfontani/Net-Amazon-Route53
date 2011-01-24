@@ -217,7 +217,7 @@ sub do_record
         @records = grep { $_->name eq $options{name} } @records if length $options{name};
         # weed out by record type, ttl, and value
         @records = grep { $_->type eq $options{type} } @records if $options{type};
-        @records = grep { $_->type eq $options{ttl} } @records if $options{ttl};
+        @records = grep { $_->ttl eq $options{ttl} } @records if length $options{ttl};
         if ( @{ $options{value} } ) {
             @records = grep { my $r = $_; grep { my $v = $_; scalar grep { $_ eq $v } @{$options{value}} } @{ $r->values } } @records;
         }
