@@ -141,9 +141,10 @@ sub do_zone
     # actions
     if ( $which eq 'create' ) {
         my $zone = shift;
-        die "Need a zone name to create\n"                                 if !$zone;
-        die "Zone needs to end in a dot\n"                                 if $zone !~ /\.$/;
-        die "No callerreference specified; please use --callerreference\n" if !length $options{callerreference};
+        die "Need a zone name to create\n" if !$zone;
+        die "Zone needs to end in a dot\n" if $zone !~ /\.$/;
+        $options{callerreference} = sprintf( "%s-%s-%s", $zone, time, $$ )
+          if !length $options{callerreference};
         print
           "Creating new zone '$zone'\n",
           "  comment:          '$options{comment}'\n",
@@ -359,8 +360,8 @@ Possible actions are:
 
 =item B<create>
 
-Needs C<--comment> and C<--callerreference>. Creates a new zone. Supports the
-C<--wait> option.
+Needs C<--comment> and optional C<--callerreference>. Creates a new zone.
+Supports the C<--wait> option.
 
 =item B<delete>
 
