@@ -112,7 +112,12 @@ sub request
         $content ? $content : undef,
     );
     my $rc = $self->ua->request( $request );
-    die "Could not perform request $method on $uri: " . $rc->status_line . "\n" . $rc->decoded_content unless $rc->is_success;
+    die "Could not perform request $method on $uri: "
+      . $rc->status_line . "\n"
+      . $rc->decoded_content . "\n"
+      . "Original request: "
+      . ( defined $content ? $content : '' ) . "\n"
+      unless $rc->is_success;
     #use YAML;warn "\n\nmethod $method to $uri @_: " . Dump($rc);
     my $resp = XML::Bare::xmlin( $rc->decoded_content );
     die "Error: $resp->{Error}{Code}\n" if ( exists $resp->{Error} );
