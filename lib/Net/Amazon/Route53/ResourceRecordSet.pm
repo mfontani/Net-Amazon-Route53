@@ -92,9 +92,7 @@ sub create
                <Type>%s</Type>
                <TTL>%s</TTL>
                <ResourceRecords>
-                  <ResourceRecord>
-                    %s
-                  </ResourceRecord>
+                  %s
                </ResourceRecords>
             </ResourceRecordSet>
          </Change>
@@ -105,7 +103,7 @@ ENDXML
     my $request_xml = sprintf( $request_xml_str,
         map { $_ }
         $self->type, $self->name, $self->name, $self->type, $self->ttl,
-        join( "\n", map { "<Value>$_</Value>" } @{ $self->values } ) );
+        join( "\n", map { "<ResourceRecord><Value>$_</Value></ResourceRecord>" } @{ $self->values } ) );
     my $resp = $self->route53->request(
         'post',
         'https://route53.amazonaws.com/2010-10-01/' . $self->hostedzone->id . '/rrset',
@@ -161,9 +159,7 @@ sub delete
                <Type>%s</Type>
                <TTL>%s</TTL>
                <ResourceRecords>
-                  <ResourceRecord>
-                    %s
-                  </ResourceRecord>
+                  %s
                </ResourceRecords>
             </ResourceRecordSet>
          </Change>
@@ -173,7 +169,7 @@ sub delete
 ENDXML
     my $request_xml = sprintf( $request_xml_str,
         (map { $_ } ( $self->type, $self->name, $self->name, $self->type, $self->ttl )),
-        join( "\n", map { "<Value>" . $_ . "</Value>" } @{ $self->values } ) );
+        join( "\n", map { "<ResourceRecord><Value>" . $_ . "</Value></ResourceRecord>" } @{ $self->values } ) );
     my $resp = $self->route53->request(
         'post',
         'https://route53.amazonaws.com/2010-10-01/' . $self->hostedzone->id . '/rrset',
