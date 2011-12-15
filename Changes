@@ -1,3 +1,10 @@
+v0.113490 - 2011-12-15
+    - Batch updates/changes:
+      - batch_create
+      - batch_change
+    - Atomic updates of whole zones
+      - atomic_update
+
 v0.110310 - 2011-01-31
     - Proper decoding of entities
     - Fix: ttl check works now
