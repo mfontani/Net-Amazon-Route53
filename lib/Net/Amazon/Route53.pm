@@ -171,14 +171,15 @@ sub get_hosted_zones
     my @records = record_generating_subroutine(); # returning an array of Net::Amazon::Route53::ResourceRecordSets
     my $change = $route53->batch_create(\@records); # Or ->batch_create(\@records,1) if you want to wait
 
-Turns an arrayref of L<Net::Amazon::Route53::ResourceRecordSet> objects into one big create request. All records must
-belong to the same hosted zone.
+Turns an arrayref of L<Net::Amazon::Route53::ResourceRecordSet> objects into
+one big create request. All records must belong to the same hosted zone.
 
-Takes an optional boolean parameter, C<wait>, to indicate whether the request should
-return straightaway (default, or when C<wait> is C<0>) or it should wait until the
-request is C<INSYNC> according to the Change's status.
+Takes an optional boolean parameter, C<wait>, to indicate whether the request
+should return straightaway (default, or when C<wait> is C<0>) or it should wait
+until the request is C<INSYNC> according to the Change's status.
 
-Returns a L<Net::Amazon::Route53::Change> object representing the change requested.
+Returns a L<Net::Amazon::Route53::Change> object representing the change
+requested.
 
 =cut
 
@@ -239,23 +240,29 @@ sub batch_create
     my $hosted_zone = $route_53->get_hosted_zones("example.com.");
     my $old_records = $hosted_zone->resource_record_sets;
     my $new_records = record_generating_subroutine();
-    my $change = $route53->atomic_update($old_records,$new_records); # Or ->atomic_update($ref1,$ref2,1) if you want to wait
+    my $change = $route53->atomic_update($old_records,$new_records);
+    # Or ->atomic_update($ref1,$ref2,1) if you want to wait
 
-Be warned: this method can be destructive. Give it the arrayref of records currently in your zone and an arrayref of records
-representing the desired state of your zone, and it will create, change, and delete the current records in the zone to match
-the set you submitted.
+Be warned: B<this method can be destructive>. Give it the arrayref of records
+currently in your zone and an arrayref of records representing the desired
+state of your zone, and it will create, change, and delete the current records
+in the zone to match the set you submitted.
 
-Don't send the Amazon Route53 NS or SOA record in the set of original records.
+B<Don't send the Amazon Route53 NS or SOA record in the set of original records>.
 
-This method discovers which records needs to be deleted/created, e.g., changed, which ones need simply to be created for the first
-time, and deletes records not defined in the new set. It's an "all-in-one, all-at-once" update for all the records in your zone.
-This, and the fact that it is destructive, is why it is called c<atomic_update>.
+This method discovers which records needs to be deleted/created, e.g., changed,
+which ones need simply to be created for the first time, and
+B<deletes records not defined in the new set>.
+It's an "all-in-one, all-at-once" update for all the records in your zone.
+This, and the fact that it is destructive, is why it is called
+C<atomic_update>.
 
-Takes an optional boolean parameter, C<wait>, to indicate whether the request should
-return straightaway (default, or when C<wait> is C<0>) or it should wait until the
-request is C<INSYNC> according to the Change's status.
+Takes an optional boolean parameter, C<wait>, to indicate whether the request
+should return straightaway (default, or when C<wait> is C<0>) or it should wait
+until the request is C<INSYNC> according to the Change's status.
 
-Returns a L<Net::Amazon::Route53::Change> object representing the change requested.
+Returns a L<Net::Amazon::Route53::Change> object representing the change
+requested.
 
 =cut
 
@@ -354,10 +361,12 @@ sub atomic_update {
     my $route53 = Net::Amazon::Route53->new( key => '...', id => '...' );
     my $hosted_zone = $route_53->get_hosted_zones("example.com.");
     my $recordset_changes = recordset_changes_generating_subroutine();
-    my $change = $route53->batch_change($recordset_changes); # Or ->batch_change($recordset_changes,1) if you want to wait
+    my $change = $route53->batch_change($recordset_changes);
+    # Or ->batch_change($recordset_changes,1) if you want to wait
 
-This method takes an arrayref of L<Net::Amazon::Route53::ResourceRecordSet::Change> objects and the optional wait argument, and makes one big request to
-change all the records at once.
+This method takes an arrayref of
+L<Net::Amazon::Route53::ResourceRecordSet::Change> objects and the optional
+C<wait> argument, and makes one big request to change all the records at once.
 
 =cut
 
@@ -413,8 +422,9 @@ sub batch_change {
 
 =head3 _get_create_xml
 
-Private method for xml templating. Takes an L<Net::Amazon::Route53::ResourceRecordSet::Change> object
-and returns the xml to create that single record.
+Private method for xml templating. Takes an
+L<Net::Amazon::Route53::ResourceRecordSet::Change> object and returns the xml
+to create that single record.
 
 =cut
 
@@ -437,15 +447,18 @@ ENDXML
     my $create_xml = sprintf( $create_xml_str,
         map { $_ }
         $record->name, $record->type, $record->ttl,
-        join( "\n", map { "<ResourceRecord><Value>" . $_ . "</Value></ResourceRecord>" } @{ $record->values } ) );
+        join( "\n", map {
+            "<ResourceRecord><Value>" . $_ . "</Value></ResourceRecord>"
+        } @{ $record->values } ) );
 
     return $create_xml;
 }
 
 =head3 _get_delete_xml
 
-Private method for xml templating. Takes an L<Net::Amazon::Route53::ResourceRecordSet> object
-and returns the xml to delete that single record.
+Private method for xml templating. Takes an
+L<Net::Amazon::Route53::ResourceRecordSet> object and returns the xml to delete
+that single record.
 
 =cut
 
@@ -468,15 +481,18 @@ ENDXML
     my $delete_xml = sprintf( $delete_xml_str,
         map { $_ }
         $record->name, $record->type, $record->ttl,
-        join( "\n", map { "<ResourceRecord><Value>" . $_ . "</Value></ResourceRecord>" } @{ $record->values } ) );
+        join( "\n", map {
+            "<ResourceRecord><Value>" . $_ . "</Value></ResourceRecord>"
+        } @{ $record->values } ) );
 
     return $delete_xml;
 }
 
 =head3 _get_change_xml
 
-Private method for xml templating. Takes an L<Net::Amazon::Route53::ResourceRecordSet::Change> object
-and returns the xml to change, i.e., delete and create, that single record.
+Private method for xml templating. Takes an
+L<Net::Amazon::Route53::ResourceRecordSet::Change> object and returns the xml
+to change, i.e., delete and create, that single record.
 
 =cut
 
@@ -493,7 +509,7 @@ sub _get_change_xml {
                   %s
                </ResourceRecords>
             </ResourceRecordSet>
-         </Change>
+        </Change>
         <Change>
             <Action>CREATE</Action>
             <ResourceRecordSet>
@@ -504,11 +520,11 @@ sub _get_change_xml {
                   %s
                </ResourceRecords>
             </ResourceRecordSet>
-         </Change>
+        </Change>
 ENDXML
 
     my $change_xml = sprintf( $change_xml_str,
-        (map { $_ } ( $record->type, $record->name, $record->type, $record->ttl, ) ),
+        (map { $_ } ( $record->name, $record->type, $record->ttl, ) ),
         join( "\n", map { "<ResourceRecord><Value>" . $_ . "</Value></ResourceRecord>" } @{ $record->original_values } ),
         (map { $_ } ( $record->name, $record->type, $record->ttl, ) ),
         join( "\n", map { "<ResourceRecord><Value>" . $_ . "</Value></ResourceRecord>" } @{ $record->values } ) );
@@ -559,6 +575,11 @@ L<http://docs.amazonwebservices.com/Route53/latest/APIReference/>
 =head1 AUTHOR
 
 Marco FONTANI <mfontani@cpan.org>
+
+=head1 CONTRIBUTORS
+
+Daiji Hirata <hirata@uva.ne.jp>
+Amiri Barksdale <amiri@arisdottle.net>
 
 =head1 COPYRIGHT AND LICENSE
 
