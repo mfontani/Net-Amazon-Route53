@@ -509,7 +509,7 @@ sub _get_change_xml {
                   %s
                </ResourceRecords>
             </ResourceRecordSet>
-         </Change>
+        </Change>
         <Change>
             <Action>CREATE</Action>
             <ResourceRecordSet>
@@ -520,11 +520,11 @@ sub _get_change_xml {
                   %s
                </ResourceRecords>
             </ResourceRecordSet>
-         </Change>
+        </Change>
 ENDXML
 
     my $change_xml = sprintf( $change_xml_str,
-        (map { $_ } ( $record->type, $record->name, $record->type, $record->ttl, ) ),
+        (map { $_ } ( $record->name, $record->type, $record->ttl, ) ),
         join( "\n", map { "<ResourceRecord><Value>" . $_ . "</Value></ResourceRecord>" } @{ $record->original_values } ),
         (map { $_ } ( $record->name, $record->type, $record->ttl, ) ),
         join( "\n", map { "<ResourceRecord><Value>" . $_ . "</Value></ResourceRecord>" } @{ $record->values } ) );
@@ -575,6 +575,11 @@ L<http://docs.amazonwebservices.com/Route53/latest/APIReference/>
 =head1 AUTHOR
 
 Marco FONTANI <mfontani@cpan.org>
+
+=head1 CONTRIBUTORS
+
+Daiji Hirata <hirata@uva.ne.jp>
+Amiri Barksdale <amiri@arisdottle.net>
 
 =head1 COPYRIGHT AND LICENSE
 
