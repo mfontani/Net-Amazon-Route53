@@ -1,3 +1,9 @@
+
+    - Fix templating error in Net::Amazon::Route53::_get_change_xml
+    - Fix POD documentation in Net::Amazon::Route53::ResourceRecordSet::Change
+    - Whitespace issues
+    - Give credit to contributors
+
 v0.113490 - 2011-12-15
     - Batch updates/changes:
       - batch_create
