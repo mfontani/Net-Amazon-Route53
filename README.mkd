@@ -26,11 +26,15 @@ Implemented
 - List records matching a name, type, ttl or values for a hosted zone
 - Delete a record matching a name, type, ttl or value for a hosted zone
 - Create a new record of given name, type, ttl and value(s) for a hosted zone
+- Create a "change record" option, which does a "delete" and a "create" action in one request: See Net::Amazon::Route53::ResourceRecordSet::Change.
+- Support retrieving more than 100 records at once in Net::Amazon::Route53::HostedZone::resource_record_sets
 
 To do
 -----
 
-- Create a "change record" option, which does a "delete" and a "create" action in one request.
+- Support changing more than 100 records at once
+- Support deleting more than 100 records at once
+
 
 This software is copyright (c) 2011 by Marco Fontani.
 

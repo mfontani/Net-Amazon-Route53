@@ -1,3 +1,9 @@
+
+    - Changes by contributors:
+      - Retrieve more than 100 resource record sets at once
+      - Test the retrieval of more than 100 resource record sets at once.
+      - Return NOOP status from atomic_update if the changeset is empty
+
 v0.113630 - 2011-12-29
     - Changes by contributors:
       - Fix templating error in Net::Amazon::Route53::_get_change_xml
