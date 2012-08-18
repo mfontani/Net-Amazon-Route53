@@ -100,7 +100,7 @@ has 'resource_record_sets' => (
                     route53    => $self->route53,
                     hostedzone => $self,
                     name       => decode_entities($res->{Name}),
-                    ttl        => $res->{TTL},
+                    ttl        => $res->{TTL} || 0,
                     type       => decode_entities($res->{Type}),
                     values     => [
                         map { decode_entities($_->{Value}) } @{
