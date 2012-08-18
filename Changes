@@ -1,3 +1,9 @@
+v0.122310 - 2012-08-18
+    - Changes by contributors:
+      - Retrieve more than 100 resource record sets at once (+test)
+      - Return NOOP status from atomic_update if the changeset is empty
+      - Paper over undefined TTL returned in some cases: set it to 0
+
 v0.113630 - 2011-12-29
     - Changes by contributors:
       - Fix templating error in Net::Amazon::Route53::_get_change_xml
