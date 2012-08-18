@@ -318,6 +318,12 @@ sub atomic_update {
 
     my $batch_xml = $self->_batch_request_header;
 
+    # Do not attempt to push an empty changeset
+    return Net::Amazon::Route53::Change->new(
+        route53 => $self,
+        status  => 'NOOP'
+    ) if @change_objects + @deletions + @creates < 1;
+
     for my $rr (@change_objects) {
         $rr->name =~ /\.$/ or die "Zone name needs to end in a dot, to be changed\n";
         my $change_xml = $self->_get_change_xml($rr);
