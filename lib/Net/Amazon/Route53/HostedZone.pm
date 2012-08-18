@@ -84,25 +84,35 @@ has 'resource_record_sets' => (
     lazy    => 1,
     default => sub {
         my $self = shift;
-        my $resp =
-          $self->route53->request( 'get', 'https://route53.amazonaws.com/2010-10-01/' . $self->id . '/rrset' );
+        my $next_record_name = '';
         my @resource_record_sets;
-        for my $res ( @{ $resp->{ResourceRecordSets}{ResourceRecordSet} } ) {
-            push @resource_record_sets,
-              Net::Amazon::Route53::ResourceRecordSet->new(
-                route53    => $self->route53,
-                hostedzone => $self,
-                name       => decode_entities($res->{Name}),
-                ttl        => $res->{TTL},
-                type       => decode_entities($res->{Type}),
-                values     => [
-                    map { decode_entities($_->{Value}) } @{
-                        ref $res->{ResourceRecords}{ResourceRecord} eq 'ARRAY'
-                        ? $res->{ResourceRecords}{ResourceRecord}
-                        : [ $res->{ResourceRecords}{ResourceRecord} ]
-                      }
-                ],
-              );
+        while (1) {
+            my $resp = $self->route53->request('get',
+                      'https://route53.amazonaws.com/2010-10-01/'
+                    . $self->id
+                    . '/rrset?maxitems=100'
+                    . $next_record_name);
+            my $set = $resp->{ResourceRecordSets}{ResourceRecordSet};
+            my @results = ref($set) eq 'ARRAY' ? @$set : ($set);
+            for my $res ( @results ) {
+                push @resource_record_sets,
+                  Net::Amazon::Route53::ResourceRecordSet->new(
+                    route53    => $self->route53,
+                    hostedzone => $self,
+                    name       => decode_entities($res->{Name}),
+                    ttl        => $res->{TTL},
+                    type       => decode_entities($res->{Type}),
+                    values     => [
+                        map { decode_entities($_->{Value}) } @{
+                            ref $res->{ResourceRecords}{ResourceRecord} eq 'ARRAY'
+                            ? $res->{ResourceRecords}{ResourceRecord}
+                            : [ $res->{ResourceRecords}{ResourceRecord} ]
+                        }
+                    ],
+                );
+            }
+            last unless $resp->{NextRecordName};
+            $next_record_name = '&name='.$resp->{NextRecordName};
         }
         \@resource_record_sets;
     }
