@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 package Net::Amazon::Route53::ResourceRecordSet::Change;
-use Mouse;
+use Any::Moose;
 extends "Net::Amazon::Route53::ResourceRecordSet";
 
 =head2 SYNOPSIS
@@ -109,7 +109,7 @@ ENDXML
     return $change;
 }
 
-no Mouse;
+no Any::Moose;
 
 =head1 AUTHOR
 

@@ -8,7 +8,7 @@ use Digest::HMAC_SHA1;
 use MIME::Base64;
 use XML::Bare;
 use HTML::Entities;
-use Mouse;
+use Any::Moose;
 
 use Net::Amazon::Route53::HostedZone;
 use Net::Amazon::Route53::ResourceRecordSet::Change;

@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 package Net::Amazon::Route53::Change;
-use Mouse;
+use Any::Moose;
 use HTML::Entities;
 
 =head2 SYNOPSIS
@@ -69,7 +69,7 @@ sub refresh
     }
 }
 
-no Mouse;
+no Any::Moose;
 
 =head1 AUTHOR
 

@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 package Net::Amazon::Route53::HostedZone;
-use Mouse;
+use Any::Moose;
 use HTML::Entities;
 
 use Net::Amazon::Route53::Change;
@@ -204,7 +204,7 @@ sub delete
     return $change;
 }
 
-no Mouse;
+no Any::Moose;
 
 =head1 AUTHOR
 
