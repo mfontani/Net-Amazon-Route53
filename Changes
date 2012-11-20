@@ -1,3 +1,6 @@
+v0.123250 - 2012-11-20
+    - #7: fix undefined decode_entities in ::ResourceRecordSet::Change
+
 v0.122310 - 2012-08-18
     - Changes by contributors:
       - Retrieve more than 100 resource record sets at once (+test)
