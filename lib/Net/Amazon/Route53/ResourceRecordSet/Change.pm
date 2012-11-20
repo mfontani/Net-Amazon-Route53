@@ -4,6 +4,7 @@ use warnings;
 package Net::Amazon::Route53::ResourceRecordSet::Change;
 use Mouse;
 extends "Net::Amazon::Route53::ResourceRecordSet";
+use HTML::Entities;
 
 =head2 SYNOPSIS
 
