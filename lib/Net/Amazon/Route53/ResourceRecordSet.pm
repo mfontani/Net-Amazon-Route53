@@ -28,8 +28,8 @@ The L<Net::Amazon::Route53::HostedZone> object this hosted zone refers to
 
 =cut
 
-has 'route53'    => ( is => 'rw', isa => 'Net::Amazon::Route53',             required => 1, );
-has 'hostedzone' => ( is => 'rw', isa => 'Net::Amazon::Route53::HostedZone', required => 1 );
+has 'route53'    => ( is => 'rw', isa => 'Net::Amazon::Route53',             required => 1, weak_ref => 1 );
+has 'hostedzone' => ( is => 'rw', isa => 'Net::Amazon::Route53::HostedZone', required => 1, weak_ref => 1 );
 
 =head3 name
 

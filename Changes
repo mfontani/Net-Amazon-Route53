@@ -1,3 +1,7 @@
+v0.123251 - 2013-01-19
+    - Fixed memory leak by adding "weak_ref => 1" for attributes of type
+      Net::Amazon::Route53 and  Net::Amazon::Route53::HostedZone
+
 v0.123250 - 2012-11-20
     - #7: fix undefined decode_entities in ::ResourceRecordSet::Change
 

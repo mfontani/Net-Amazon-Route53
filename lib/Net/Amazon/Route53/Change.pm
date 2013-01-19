@@ -23,7 +23,7 @@ to Amazon's Route 53 service
 
 =cut
 
-has 'route53' => ( is => 'rw', isa => 'Net::Amazon::Route53', required => 1, );
+has 'route53' => ( is => 'rw', isa => 'Net::Amazon::Route53', required => 1, weak_ref => 1 );
 
 =head3 id
 
