@@ -148,7 +148,9 @@ sub get_hosted_zones
     while (1) {
         my $resp =
           $self->request( 'get', 'https://route53.amazonaws.com/2010-10-01/hostedzone?maxitems=100' . $start_marker );
-        push @zones, ( ref $resp->{HostedZones}{HostedZone} eq 'ARRAY' ? @{ $resp->{HostedZones}{HostedZone} } : $resp->{HostedZones}{HostedZone} );
+        if($resp->{HostedZones}) { 
+            push @zones, ( ref $resp->{HostedZones}{HostedZone} eq 'ARRAY' ? @{ $resp->{HostedZones}{HostedZone} } : $resp->{HostedZones}{HostedZone} );
+        }
         last if $resp->{IsTruncated} eq 'false';
         $start_marker = '?marker=' . $resp->{NextMarker};
     }
