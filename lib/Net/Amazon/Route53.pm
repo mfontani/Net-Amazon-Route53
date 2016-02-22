@@ -588,6 +588,9 @@ Marco FONTANI <mfontani@cpan.org>
 
 Daiji Hirata <hirata@uva.ne.jp>
 Amiri Barksdale <amiri@arisdottle.net>
+Chris Weyl <cweyl@alumni.drew.edu>
+Jason <jasonjayr+oss@gmail.com>
+Ulrich Kautz <ulrich.kautz@googlemail.com>
 
 =head1 COPYRIGHT AND LICENSE
 
