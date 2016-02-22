@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 package Net::Amazon::Route53::ResourceRecordSet;
-use Mouse;
+use Any::Moose;
 use XML::Bare;
 use HTML::Entities;
 
@@ -188,7 +188,7 @@ ENDXML
     return $change;
 }
 
-no Mouse;
+no Any::Moose;
 
 =head1 AUTHOR
 
