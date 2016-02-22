@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 package Net::Amazon::Route53;
+
 use LWP::UserAgent;
 use HTTP::Request;
 use Digest::HMAC_SHA1;

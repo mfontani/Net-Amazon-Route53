@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 package Net::Amazon::Route53::HostedZone;
+
 use Any::Moose;
 use HTML::Entities;
 

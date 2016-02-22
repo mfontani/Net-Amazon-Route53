@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 package Net::Amazon::Route53::ResourceRecordSet;
+
 use Any::Moose;
 use XML::Bare;
 use HTML::Entities;

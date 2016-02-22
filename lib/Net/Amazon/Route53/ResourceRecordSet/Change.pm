@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 package Net::Amazon::Route53::ResourceRecordSet::Change;
+
 use Any::Moose;
 extends "Net::Amazon::Route53::ResourceRecordSet";
 use HTML::Entities;
