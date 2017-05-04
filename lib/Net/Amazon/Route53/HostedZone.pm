@@ -3,7 +3,8 @@ use warnings;
 
 package Net::Amazon::Route53::HostedZone;
 
-use Any::Moose;
+use Moo;
+use Types::Standard qw(InstanceOf Str ArrayRef);
 use HTML::Entities;
 
 use Net::Amazon::Route53::Change;
@@ -27,7 +28,7 @@ to Amazon's Route 53 service
 
 =cut
 
-has 'route53' => ( is => 'rw', isa => 'Net::Amazon::Route53', required => 1, weak_ref => 1 );
+has 'route53' => ( is => 'rw', isa => InstanceOf['Net::Amazon::Route53'], required => 1, weak_ref => 1 );
 
 =head3 id
 
@@ -49,10 +50,10 @@ Any Comment given when the zone is created
 
 =cut
 
-has 'id'              => ( is => 'rw', isa => 'Str', required => 1, default => '' );
-has 'name'            => ( is => 'rw', isa => 'Str', required => 1, default => '' );
-has 'callerreference' => ( is => 'rw', isa => 'Str', required => 1, default => '' );
-has 'comment'         => ( is => 'rw', isa => 'Str', required => 1, default => '' );
+has 'id'              => ( is => 'rw', isa => Str, required => 1, default => '' );
+has 'name'            => ( is => 'rw', isa => Str, required => 1, default => '' );
+has 'callerreference' => ( is => 'rw', isa => Str, required => 1, default => '' );
+has 'comment'         => ( is => 'rw', isa => Str, required => 1, default => '' );
 
 =head3 nameservers
 
@@ -62,7 +63,7 @@ Lazily loaded, returns a list of the nameservers authoritative for this zone
 
 has 'nameservers' => (
     is      => 'rw',
-    isa     => 'ArrayRef[Str]',
+    isa     => ArrayRef[Str],
     lazy    => 1,
     default => sub {
         my $self        = shift;
@@ -81,7 +82,7 @@ Lazily loaded, returns a list of the resource record sets
 
 has 'resource_record_sets' => (
     is      => 'rw',
-    isa     => 'ArrayRef',
+    isa     => ArrayRef,
     lazy    => 1,
     default => sub {
         my $self = shift;
@@ -205,7 +206,7 @@ sub delete
     return $change;
 }
 
-no Any::Moose;
+no Moo;
 
 =head1 AUTHOR
 

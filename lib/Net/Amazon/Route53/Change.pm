@@ -3,7 +3,8 @@ use warnings;
 
 package Net::Amazon::Route53::Change;
 
-use Any::Moose;
+use Moo;
+use Types::Standard qw(InstanceOf Str);
 use HTML::Entities;
 
 =head2 SYNOPSIS
@@ -24,7 +25,7 @@ to Amazon's Route 53 service
 
 =cut
 
-has 'route53' => ( is => 'rw', isa => 'Net::Amazon::Route53', required => 1, weak_ref => 1 );
+has 'route53' => ( is => 'rw', isa => InstanceOf['Net::Amazon::Route53'], required => 1, weak_ref => 1 );
 
 =head3 id
 
@@ -45,9 +46,9 @@ Any Comment given when the zone is created
 
 =cut
 
-has 'id'          => ( is => 'rw', isa => 'Str', required => 1, default => '' );
-has 'status'      => ( is => 'rw', isa => 'Str', required => 1, default => '' );
-has 'submittedat' => ( is => 'rw', isa => 'Str', required => 1, default => '' );
+has 'id'          => ( is => 'rw', isa => Str, required => 1, default => '' );
+has 'status'      => ( is => 'rw', isa => Str, required => 1, default => '' );
+has 'submittedat' => ( is => 'rw', isa => Str, required => 1, default => '' );
 
 =head2 METHODS
 
@@ -70,7 +71,7 @@ sub refresh
     }
 }
 
-no Any::Moose;
+no Moo;
 
 =head1 AUTHOR
 

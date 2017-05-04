@@ -3,7 +3,8 @@ use warnings;
 
 package Net::Amazon::Route53::ResourceRecordSet;
 
-use Any::Moose;
+use Moo;
+use Types::Standard qw(InstanceOf Str Int ArrayRef);
 use XML::Bare;
 use HTML::Entities;
 
@@ -29,8 +30,8 @@ The L<Net::Amazon::Route53::HostedZone> object this hosted zone refers to
 
 =cut
 
-has 'route53'    => ( is => 'rw', isa => 'Net::Amazon::Route53',             required => 1, weak_ref => 1 );
-has 'hostedzone' => ( is => 'rw', isa => 'Net::Amazon::Route53::HostedZone', required => 1, weak_ref => 1 );
+has 'route53'    => ( is => 'rw', isa => InstanceOf['Net::Amazon::Route53'],             required => 1, weak_ref => 1 );
+has 'hostedzone' => ( is => 'rw', isa => InstanceOf['Net::Amazon::Route53::HostedZone'], required => 1, weak_ref => 1 );
 
 =head3 name
 
@@ -50,10 +51,10 @@ The values associated with this resource record.
 
 =cut
 
-has 'name'   => ( is => 'rw', isa => 'Str',      required => 1 );
-has 'ttl'    => ( is => 'rw', isa => 'Int',      required => 1 );
-has 'type'   => ( is => 'rw', isa => 'Str',      required => 1 );
-has 'values' => ( is => 'rw', isa => 'ArrayRef', required => 1, default => sub { [] } );
+has 'name'   => ( is => 'rw', isa => Str,      required => 1 );
+has 'ttl'    => ( is => 'rw', isa => Int,      required => 1 );
+has 'type'   => ( is => 'rw', isa => Str,      required => 1 );
+has 'values' => ( is => 'rw', isa => ArrayRef, required => 1, default => sub { [] } );
 
 =head2 METHODS
 
@@ -189,7 +190,7 @@ ENDXML
     return $change;
 }
 
-no Any::Moose;
+no Moo;
 
 =head1 AUTHOR
 

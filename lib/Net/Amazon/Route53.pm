@@ -9,7 +9,8 @@ use Digest::HMAC_SHA1;
 use MIME::Base64;
 use XML::Bare;
 use HTML::Entities;
-use Any::Moose;
+use Moo;
+use Types::Standard qw(InstanceOf Str);
 
 use Net::Amazon::Route53::HostedZone;
 use Net::Amazon::Route53::ResourceRecordSet::Change;
@@ -43,8 +44,8 @@ The Amazon key, needed to contact Amazon's Route 53.
 
 =cut
 
-has 'id'  => ( is => 'rw', isa => 'Str', required => 1, );
-has 'key' => ( is => 'rw', isa => 'Str', required => 1, );
+has 'id'  => ( is => 'rw', isa => Str, required => 1, );
+has 'key' => ( is => 'rw', isa => Str, required => 1, );
 
 =head3 ua
 
@@ -55,7 +56,7 @@ Amazon's Route 53
 
 has 'ua' => (
     is       => 'rw',
-    isa      => 'LWP::UserAgent',
+    isa      => InstanceOf['LWP::UserAgent'],
     required => 1,
     default  => sub {
         my $self = shift;

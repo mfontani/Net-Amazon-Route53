@@ -3,7 +3,8 @@ use warnings;
 
 package Net::Amazon::Route53::ResourceRecordSet::Change;
 
-use Any::Moose;
+use Moo;
+use Types::Standard 'ArrayRef';
 extends "Net::Amazon::Route53::ResourceRecordSet";
 use HTML::Entities;
 
@@ -29,7 +30,7 @@ The values associated with this resource record.
 
 =cut
 
-has 'original_values' => ( is => 'rw', isa => 'ArrayRef', required => 1, default => sub { [] } );
+has 'original_values' => ( is => 'rw', isa => ArrayRef, required => 1, default => sub { [] } );
 
 =head2 METHODS
 
@@ -111,7 +112,7 @@ ENDXML
     return $change;
 }
 
-no Any::Moose;
+no Moo;
 
 =head1 AUTHOR
 
